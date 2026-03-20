@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { ArrowUpRight, Check, Radio } from 'lucide-react';
 import { LandingCodeTabs } from '@/components/landing-code-tabs';
 import { SiteNav } from '@/components/site-nav';
-import { auth } from '@/lib/auth';
+import { getAuth } from '@/lib/auth';
 
 const MARQUEE_CODES = [
   '01-5713',
@@ -42,6 +42,7 @@ function MarqueeRow() {
 }
 
 export default async function Home() {
+  const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   const isSignedIn = Boolean(session?.user);
 
