@@ -7,7 +7,13 @@ import type {
 } from '../types/types.js';
 import { getOrFetchProduct } from '../services/verifyService.js';
 import { recordBotVerifyMetrics } from '../services/botMetricsService.js';
+import { recordUserApiVerify } from '../services/userApiUsageService.js';
 import { logger } from '../utils/logger.js';
+
+function apiKeyUserId(req: Request): string | undefined {
+  if (req.authContext?.source !== 'api_key') return undefined;
+  return req.authContext.userId;
+}
 
 function toBotTelegramPayload(req: Request): BotTelegramPayload | undefined {
   if (req.authContext?.source !== 'bot' || !req.botTelegram) return undefined;
@@ -27,11 +33,15 @@ export async function verifyNafdacController(
 ) {
   const isBot = req.authContext?.source === 'bot';
   const botTelegram = toBotTelegramPayload(req);
+  const keyUserId = apiKeyUserId(req);
 
   try {
     const rawParam = req.params.nafdac;
     const raw = Array.isArray(rawParam) ? rawParam[0] : rawParam;
     if (!raw?.trim()) {
+      if (keyUserId) {
+        await recordUserApiVerify(keyUserId, 'error').catch(() => {});
+      }
       const body: VerifyApiErrorBody = {
         ok: false,
         code: 'INVALID_NAFDAC',
@@ -47,6 +57,9 @@ export async function verifyNafdacController(
       if (isBot) {
         await recordBotVerifyMetrics(botTelegram, 'not_found').catch(() => {});
       }
+      if (keyUserId) {
+        await recordUserApiVerify(keyUserId, 'not_found').catch(() => {});
+      }
       const body: VerifyApiErrorBody = {
         ok: false,
         code: 'NOT_FOUND',
@@ -59,11 +72,17 @@ export async function verifyNafdacController(
     if (isBot) {
       await recordBotVerifyMetrics(botTelegram, 'found').catch(() => {});
     }
+    if (keyUserId) {
+      await recordUserApiVerify(keyUserId, 'found').catch(() => {});
+    }
     const body: VerifyApiSuccess = { ok: true, product };
     res.status(200).json(body);
   } catch (err) {
     if (isBot) {
       await recordBotVerifyMetrics(botTelegram, 'failed').catch(() => {});
+    }
+    if (keyUserId) {
+      await recordUserApiVerify(keyUserId, 'error').catch(() => {});
     }
     logger.error('verifyByNafdac failed', { message: String(err) });
     next(err);

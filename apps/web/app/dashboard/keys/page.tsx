@@ -9,11 +9,11 @@ export default function KeysPage() {
           API Keys
         </h1>
         <p className="mt-1 text-[14px] text-[var(--text-2)]">
-          Manage keys for authenticating requests to{' '}
+          Manage keys for{' '}
           <code className="font-mono text-[13px] text-[var(--text-3)]">
             /api/verify
           </code>
-          . You can hold one active key at a time.
+          . Usage counts update when you call verify with your key.
         </p>
       </div>
       <ApiKeySection apiBaseUrl={apiBaseUrl} />
