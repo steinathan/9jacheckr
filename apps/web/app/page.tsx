@@ -365,13 +365,20 @@ export default async function Home() {
               style={{ color: 'var(--text-3)' }}
             >
               Prefer no code?{' '}
+              <Link
+                href="/verify"
+                className="underline underline-offset-3 transition-colors hover:text-(--text-2)"
+              >
+                Look up on the web
+              </Link>
+              {' · '}
               <a
                 href="https://t.me/NaijaCheckrBot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline underline-offset-3 transition-colors hover:text-(--text-2)"
               >
-                Verify free on Telegram →
+                Telegram →
               </a>
             </p>
           </div>

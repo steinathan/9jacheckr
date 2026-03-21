@@ -10,7 +10,8 @@ export async function requireApiAccess(
   if (
     path.startsWith('/api/bot') ||
     path.startsWith('/api/auth') ||
-    path.startsWith('/api/keys')
+    path.startsWith('/api/keys') ||
+    path.startsWith('/api/public')
   ) {
     next();
     return;

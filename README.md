@@ -30,12 +30,12 @@ Relevant code: `apps/server/src/utils/nafdacRegistrationClient.ts` (request) and
 
 ## Technical design (high level)
 
-| Piece       | Role                                                                                            |
-| ----------- | ----------------------------------------------------------------------------------------------- |
-| **Web**     | Next.js marketing site, login (Google via Better Auth on the API), dashboard (API keys, usage). |
-| **Server**  | Express: verify route, optional Mongo cache, Better Auth + API keys, bot hooks.                 |
-| **Bot**     | Telegram bot that calls the API with an internal token.                                         |
-| **MongoDB** | Products (cached lookups), users/sessions (auth), API keys, usage metrics, bot data.            |
+| Piece       | Role                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Web**     | Next.js marketing site, public `/verify` via same-origin BFF (`/api/verify-lookup`), login, dashboard (API keys). |
+| **Server**  | Express: verify route, optional Mongo cache, Better Auth + API keys, bot hooks.                                   |
+| **Bot**     | Telegram bot that calls the API with an internal token.                                                           |
+| **MongoDB** | Products (cached lookups), users/sessions (auth), API keys, usage metrics, bot data.                              |
 
 Clients talk **only to our API**. The API is the only part that talks to NAFDAC’s portal (when a number isn’t already cached).
 
@@ -55,7 +55,7 @@ If the key is **rotated or revoked**, old keys stop working immediately (`INVALI
 
 ### 2. Base URL
 
-**Production:** `https://api.9jacheckr.com`  
+**Production:** `https://api.9jacheckr.com`
 
 Use **HTTPS**. All API paths are under `/api/...`.
 
@@ -68,11 +68,13 @@ Replace `{nafdac}` with the number from the product label (e.g. `01-5713`). If t
 
 **Required header:**
 
-| Header | Value |
-| --- | --- |
+| Header      | Value                              |
+| ----------- | ---------------------------------- |
 | `x-api-key` | Your API key (starts with `njc_`). |
 
 You do **not** need cookies or a session for verify — the key is enough.
+
+**Website lookup (not for third-party apps):** The `/verify` page calls **your own** Next.js route `POST /api/verify-lookup` (same origin, no secret in the browser). That server route forwards to the API with an internal header. **`GET /api/public/verify/{nafdac}`** on the API requires a shared server secret (`WEB_VERIFY_INTERNAL_SECRET`); it is **not** documented for integrators and is not usable from browsers without that secret. Use **`GET /api/verify/{nafdac}` + `x-api-key`** for integrations.
 
 ### 4. Success response (`200`)
 
@@ -94,32 +96,32 @@ When the number is found on the register, the body looks like:
 }
 ```
 
-| Field | Notes |
-| --- | --- |
+| Field                         | Notes                                   |
+| ----------------------------- | --------------------------------------- |
 | `approvedDate` / `expiryDate` | ISO 8601 strings, or `null` if unknown. |
-| `ingredients` | Array of strings; may be empty. |
+| `ingredients`                 | Array of strings; may be empty.         |
 
 ### 5. Error responses
 
 Check **`ok: false`** and branch on **`code`** (and HTTP status) in your integration.
 
-| HTTP | `code` | What to do |
-| --- | --- | --- |
-| **401** | `MISSING_API_KEY` | Send the `x-api-key` header. |
-| **401** | `INVALID_API_KEY` | Key wrong, revoked, or typo — fix the key or create a new one in the dashboard. |
-| **400** | `INVALID_NAFDAC` | Bad or empty number in the URL — validate input before calling. |
-| **404** | `NOT_FOUND` | Valid request, but **no product** for that number (not on the register from NAFDAC’s side). Show a clear message to your user. |
-| **429** | `RATE_LIMITED` | Too many requests — **wait and retry** with backoff; don’t hammer the API. |
-| **500** | `INTERNAL_ERROR` | Something failed on our side — **retry later**; if it persists, contact us. |
+| HTTP    | `code`            | What to do                                                                                                                     |
+| ------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **401** | `MISSING_API_KEY` | Send the `x-api-key` header.                                                                                                   |
+| **401** | `INVALID_API_KEY` | Key wrong, revoked, or typo — fix the key or create a new one in the dashboard.                                                |
+| **400** | `INVALID_NAFDAC`  | Bad or empty number in the URL — validate input before calling.                                                                |
+| **404** | `NOT_FOUND`       | Valid request, but **no product** for that number (not on the register from NAFDAC’s side). Show a clear message to your user. |
+| **429** | `RATE_LIMITED`    | Too many requests — **wait and retry** with backoff; don’t hammer the API.                                                     |
+| **500** | `INTERNAL_ERROR`  | Something failed on our side — **retry later**; if it persists, contact us.                                                    |
 
 ### 6. Rate limits
 
 Verify (and other routes under `/api`) share one limiter:
 
-| | |
-| --- | --- |
-| **Limit** | **60** requests |
-| **Window** | **15 minutes** |
+|                |                       |
+| -------------- | --------------------- |
+| **Limit**      | **60** requests       |
+| **Window**     | **15 minutes**        |
 | **Counted by** | **Client IP** address |
 
 When you exceed this, the API responds with **429** and `code: RATE_LIMITED`. The response may include standard **`RateLimit-*`** headers (remaining quota and reset hint) — you can use those to back off before retrying.
@@ -138,10 +140,9 @@ curl -sS "https://api.9jacheckr.com/api/verify/01-5713" \
 **JavaScript (fetch)**
 
 ```js
-const res = await fetch(
-  'https://api.9jacheckr.com/api/verify/01-5713',
-  { headers: { 'x-api-key': process.env.CHECKR_API_KEY } },
-);
+const res = await fetch('https://api.9jacheckr.com/api/verify/01-5713', {
+  headers: { 'x-api-key': process.env.CHECKR_API_KEY },
+});
 const data = await res.json();
 if (data.ok) {
   console.log(data.product);

@@ -314,4 +314,7 @@ body {
   .anim-d2 { animation-delay: 0.12s; }
   .anim-d3 { animation-delay: 0.18s; }
   .anim-d4 { animation-delay: 0.24s; }
+  .verify-result-reveal {
+    animation: fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }

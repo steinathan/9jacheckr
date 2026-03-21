@@ -30,12 +30,6 @@ export function MarketingNavActions() {
   return (
     <>
       <Link
-        href="/login"
-        className="btn-ghost h-8 hidden sm:inline-flex focus-visible-ring"
-      >
-        Log in
-      </Link>
-      <Link
         href="/login?next=/dashboard"
         className="btn-primary focus-visible-ring"
       >

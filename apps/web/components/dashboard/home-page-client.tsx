@@ -34,7 +34,14 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
           style={{ color: 'var(--text-2)' }}
         >
           Create an API key, then send a request. The endpoint accepts any valid
-          NAFDAC registration number.
+          NAFDAC registration number.{' '}
+          <Link
+            href="/verify"
+            className="font-medium text-[#dfff1f] underline underline-offset-3 hover:text-[#eaff5e]"
+          >
+            Or use the public lookup
+          </Link>{' '}
+          (no API key).
         </p>
 
         <ol className="mt-5 space-y-3">

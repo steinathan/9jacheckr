@@ -4,7 +4,7 @@ Express API: NAFDAC verify, Telegram bot hooks, Better Auth (Google), API keys i
 
 **Needs:** Node 20+, MongoDB. Copy `apps/server/.env.example` → `.env`.
 
-**Important vars:** `MONGODB_URI`, `API_KEY_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `WEB_APP_URL`, `BOT_INTERNAL_TOKEN`.
+**Important vars:** `MONGODB_URI`, `API_KEY_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `WEB_APP_URL`, `BOT_INTERNAL_TOKEN`, `WEB_VERIFY_INTERNAL_SECRET` (same value as the Next.js app — gates `/api/public/verify`;
 
 Google redirect URI: `{BETTER_AUTH_URL}/api/auth/callback/google`
 

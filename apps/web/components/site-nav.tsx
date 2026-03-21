@@ -26,6 +26,9 @@ export function SiteNav() {
             <Link href="/#features" className="btn-ghost">
               Features
             </Link>
+            <Link href="/verify" className="btn-ghost">
+              Verify
+            </Link>
             <Link href="/#api" className="btn-ghost">
               API
             </Link>
@@ -40,7 +43,13 @@ export function SiteNav() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Link
+            href="/verify"
+            className="btn-ghost h-8 md:hidden focus-visible-ring"
+          >
+            Verify
+          </Link>
           <MarketingNavActions />
         </div>
       </div>

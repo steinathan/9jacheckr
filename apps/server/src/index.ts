@@ -7,6 +7,7 @@ import { closeAuthMongo, getAuth } from './auth/auth.js';
 import verifyNafdacRouter from './routes/verifyNafdacRouter.js';
 import { botRouter } from './routes/botRouter.js';
 import apiKeyRouter from './routes/apiKeyRouter.js';
+import publicVerifyRouter from './routes/publicVerifyRouter.js';
 import { requireApiAccess } from './middleware/requireApiAccess.js';
 import { logger } from './utils/logger.js';
 import { httpLogger } from './middleware/httpLogger.js';
@@ -44,6 +45,7 @@ async function main() {
   app.use('/api/verify', verifyNafdacRouter);
   app.use('/api/bot', botRouter);
   app.use('/api/keys', apiKeyRouter);
+  app.use('/api/public', publicVerifyRouter);
 
   app.use(errorHandler);
 
