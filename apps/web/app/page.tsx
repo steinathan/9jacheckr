@@ -165,15 +165,46 @@ function TerminalPreview() {
             <Punc>,</Punc>
           </Line>
           <Line p="    ">
+            <Key>&quot;source&quot;</Key>
+            <Punc>: </Punc>
+            <Str>&quot;Imported Product&quot;</Str>
+            <Punc>,</Punc>
+          </Line>
+          <Line p="    ">
             <Key>&quot;manufacturer&quot;</Key>
             <Punc>: </Punc>
             <Str>&quot;UNIMER S.A&quot;</Str>
             <Punc>,</Punc>
           </Line>
           <Line p="    ">
+            <Key>&quot;approvedDate&quot;</Key>
+            <Punc>: </Punc>
+            <Str>&quot;2025-07-30T00:00:00.000Z&quot;</Str>
+            <Punc>,</Punc>
+          </Line>
+          <Line p="    ">
             <Key>&quot;expiryDate&quot;</Key>
             <Punc>: </Punc>
             <Str>&quot;2030-07-29T00:00:00.000Z&quot;</Str>
+            <Punc>,</Punc>
+          </Line>
+          <Line p="    ">
+            <Key>&quot;ingredients&quot;</Key>
+            <Punc>: [</Punc>
+          </Line>
+          <Line p="      ">
+            <Str>&quot;SARDINE&quot;</Str>
+            <Punc>,</Punc>
+          </Line>
+          <Line p="      ">
+            <Str>&quot;VEGETABLE OIL&quot;</Str>
+            <Punc>,</Punc>
+          </Line>
+          <Line p="      ">
+            <Str>&quot;SALT&quot;</Str>
+          </Line>
+          <Line p="    ">
+            <Punc>]</Punc>
           </Line>
           <Line p="  ">
             <Punc>{'}'}</Punc>
