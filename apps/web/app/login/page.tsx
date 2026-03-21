@@ -4,7 +4,7 @@ import { LoginForm } from '@/components/login/login-form';
 
 export default function LoginPage() {
   return (
-    <div className="page-bg flex min-h-dvh flex-col text-[var(--text)]">
+    <div className="page-bg flex min-h-dvh flex-col text-foreground">
       <SiteNav />
 
       <main className="flex flex-1 items-center justify-center px-4 py-12">

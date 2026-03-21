@@ -12,7 +12,7 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-[1.5rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
+        <h1 className="font-display text-[1.5rem] font-semibold tracking-[-0.03em] text-foreground">
           Overview
         </h1>
         {user?.email ? (
@@ -26,7 +26,7 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
         className="rounded-xl border p-6"
         style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}
       >
-        <h2 className="text-[14px] font-semibold text-[var(--text)]">
+        <h2 className="text-[14px] font-semibold text-foreground">
           Quick start
         </h2>
         <p
@@ -104,7 +104,7 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-[14px] font-semibold text-[var(--text)]">
+        <h2 className="text-[14px] font-semibold text-foreground">
           Example request
         </h2>
         <CurlCard apiBaseUrl={apiBaseUrl} />

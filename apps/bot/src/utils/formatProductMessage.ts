@@ -1,7 +1,7 @@
 import type { ProductDto } from '../types/apiTypes.js';
 
 function formatDate(value: string | null): string {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 10);
 }
@@ -32,7 +32,7 @@ function expiryStatus(expiryDate: string | null): {
 export function formatVerifyReply(product: ProductDto): string {
   const exp = expiryStatus(product.expiryDate);
   const lines = [
-    '<b>9ja Checkr — NAFDAC lookup</b>',
+    '<b>9ja Checkr - NAFDAC lookup</b>',
     '',
     `<b>Status:</b> Listed in registry (verify details on pack & NAFDAC channels).`,
     `<b>NAFDAC:</b> <code>${escapeHtml(product.nafdac)}</code>`,

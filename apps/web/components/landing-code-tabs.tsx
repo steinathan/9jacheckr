@@ -23,7 +23,7 @@ export function LandingCodeTabs({ tabs }: { tabs: Tab[] }) {
                 onClick={() => setActive(tab.id)}
                 className={cn(
                   'rounded-md px-3 py-1.5 font-mono text-[12px] font-medium transition-colors',
-                  on ? 'text-[var(--text)]' : 'hover:text-[var(--text-2)]',
+                  on ? 'text-foreground' : 'hover:text-(--text-2)',
                 )}
                 style={{
                   background: on ? 'var(--bg-overlay)' : 'transparent',

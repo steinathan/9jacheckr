@@ -40,7 +40,7 @@ export function DashboardAuthGate({ children }: { children: React.ReactNode }) {
             <code className="font-mono text-amber-300">
               apps/web/.env.local
             </code>{' '}
-            to your API origin — e.g.{' '}
+            to your API origin - e.g.{' '}
             <code className="font-mono text-amber-300">
               http://localhost:4000
             </code>

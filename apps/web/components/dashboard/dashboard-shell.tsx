@@ -36,7 +36,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         >
           <Link
             href="/"
-            className="group flex items-center gap-2 text-[14px] font-semibold text-[var(--text)]"
+            className="group flex items-center gap-2 text-[14px] font-semibold text-foreground"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#dfff1f] text-[12px] font-bold text-black transition group-hover:bg-[#eaff5e]">
               9
@@ -56,14 +56,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     className={cn(
                       'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors',
                       active
-                        ? 'bg-white/8 text-[var(--text)]'
-                        : 'text-[var(--text-2)] hover:bg-white/5 hover:text-[var(--text)]',
+                        ? 'bg-white/8 text-foreground'
+                        : 'text-(--text-2) hover:bg-white/5 hover:text-foreground',
                     )}
                   >
                     <Icon
                       className={cn(
                         'h-4 w-4 shrink-0 transition-colors',
-                        active ? 'text-[#dfff1f]' : 'text-[var(--text-3)]',
+                        active ? 'text-[#dfff1f]' : 'text-(--text-3)',
                       )}
                       strokeWidth={active ? 2 : 1.75}
                     />
@@ -80,10 +80,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           >
             <a
               href="/#api"
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-colors hover:bg-white/5 hover:text-[var(--text)]"
+              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-(--text-2) transition-colors hover:bg-white/5 hover:text-foreground"
             >
               <BookOpen
-                className="h-4 w-4 shrink-0 text-[var(--text-3)]"
+                className="h-4 w-4 shrink-0 text-(--text-3)"
                 strokeWidth={1.75}
               />
               API Reference
@@ -104,11 +104,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               }}
             >
               {user.name ? (
-                <p className="truncate text-[12px] font-medium text-[var(--text)]">
+                <p className="truncate text-[12px] font-medium text-foreground">
                   {user.name}
                 </p>
               ) : null}
-              <p className="truncate text-[11px] text-[var(--text-3)]">
+              <p className="truncate text-[11px] text-(--text-3)">
                 {user.email}
               </p>
             </div>
@@ -116,10 +116,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-colors hover:bg-white/5 hover:text-[var(--text)] focus-visible-ring"
+            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-medium text-(--text-2) transition-colors hover:bg-white/5 hover:text-foreground focus-visible-ring"
           >
             <LogOut
-              className="h-3.5 w-3.5 shrink-0 text-[var(--text-3)]"
+              className="h-3.5 w-3.5 shrink-0 text-(--text-3)"
               strokeWidth={1.75}
             />
             Sign out
@@ -137,7 +137,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         >
           <Link
             href="/"
-            className="group flex items-center gap-2 text-[14px] font-semibold text-[var(--text)]"
+            className="group flex items-center gap-2 text-[14px] font-semibold text-foreground"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#dfff1f] text-[12px] font-bold text-black">
               9
@@ -147,7 +147,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="text-[13px] text-[var(--text-2)] transition-colors hover:text-[var(--text)]"
+            className="text-[13px] text-(--text-2) transition-colors hover:text-foreground"
           >
             Sign out
           </button>
@@ -169,8 +169,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   'flex flex-1 items-center justify-center gap-1.5 border-b-2 py-3 text-[13px] font-medium transition-colors',
                   active
-                    ? 'border-[#dfff1f] text-[var(--text)]'
-                    : 'border-transparent text-[var(--text-2)] hover:text-[var(--text)]',
+                    ? 'border-[#dfff1f] text-foreground'
+                    : 'border-transparent text-(--text-2) hover:text-foreground',
                 )}
               >
                 <Icon className="h-3.5 w-3.5" strokeWidth={active ? 2 : 1.75} />

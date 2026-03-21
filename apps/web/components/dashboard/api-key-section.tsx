@@ -162,12 +162,12 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
             background: 'var(--bg-subtle)',
           }}
         >
-          <h3 className="text-[14px] font-semibold text-[var(--text)]">
+          <h3 className="text-[14px] font-semibold text-foreground">
             Verify usage
           </h3>
           <p className="mt-0.5 text-[12px]" style={{ color: 'var(--text-3)' }}>
             Counts for{' '}
-            <code className="font-mono text-[11px] text-[var(--text-3)]">
+            <code className="font-mono text-[11px] text-(--text-3)">
               GET /api/verify/:nafdac
             </code>{' '}
             with your API key.
@@ -211,7 +211,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <div>
-            <h3 className="text-[14px] font-semibold text-[var(--text)]">
+            <h3 className="text-[14px] font-semibold text-foreground">
               {info ? 'Active key' : 'No API key'}
             </h3>
             <p
@@ -295,7 +295,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em]"
                 style={{ color: '#dfff1f' }}
               >
-                Copy your key — shown only once
+                Copy your key, shown only once
               </p>
               <div
                 className="flex items-center gap-2 rounded-lg border px-3 py-2.5"
@@ -304,7 +304,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                   background: 'var(--bg-raised)',
                 }}
               >
-                <code className="flex-1 break-all font-mono text-[13px] text-[var(--text)]">
+                <code className="flex-1 break-all font-mono text-[13px] text-foreground">
                   {rawKey}
                 </code>
                 <CopyFieldButton text={rawKey} label="Copy" />
@@ -326,7 +326,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                     Key prefix
                   </p>
                   <p className="mt-1 font-mono text-[14px]">
-                    <span className="text-[var(--text)]">{info.keyPrefix}</span>
+                    <span className="text-foreground">{info.keyPrefix}</span>
                     <span style={{ color: 'var(--text-3)' }}>
                       {'•'.repeat(20)}
                     </span>
@@ -364,7 +364,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               className="rounded-lg border border-dashed px-6 py-8 text-center"
               style={{ borderColor: 'var(--border)' }}
             >
-              <p className="text-[14px] font-medium text-[var(--text)]">
+              <p className="text-[14px] font-medium text-foreground">
                 No API key yet
               </p>
               <p

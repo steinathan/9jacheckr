@@ -14,7 +14,7 @@ export function SiteNav() {
         <div className="flex min-w-0 items-center gap-4 md:gap-6">
           <Link
             href="/"
-            className="group flex items-center gap-2 text-[14px] font-semibold text-[var(--text)]"
+            className="group flex items-center gap-2 text-[14px] font-semibold text-foreground"
           >
             <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[5px] bg-[#dfff1f] text-[12px] font-bold text-black transition group-hover:bg-[#eaff5e]">
               9

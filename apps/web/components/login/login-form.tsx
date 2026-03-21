@@ -56,7 +56,7 @@ export function LoginForm() {
         <code className="font-mono text-amber-300">
           NEXT_PUBLIC_API_BASE_URL
         </code>{' '}
-        in <code className="font-mono text-amber-300">.env.local</code> — e.g.{' '}
+        in <code className="font-mono text-amber-300">.env.local</code> - e.g.{' '}
         <code className="font-mono text-amber-300">http://localhost:4000</code>.
       </div>
     );
@@ -94,7 +94,7 @@ export function LoginForm() {
       </button>
 
       <p className="text-center text-[12px]" style={{ color: 'var(--text-3)' }}>
-        <Link href="/" className="transition-colors hover:text-[var(--text-2)]">
+        <Link href="/" className="transition-colors hover:text-(--text-2)">
           ← Back to home
         </Link>
       </p>

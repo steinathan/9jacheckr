@@ -80,7 +80,7 @@ function TerminalPreview() {
           className="ml-3 min-w-0 flex-1 truncate font-mono text-[11px]"
           style={{ color: 'var(--syn-comment)' }}
         >
-          bash — 9ja-checkr
+          bash - 9ja-checkr
         </span>
       </div>
 
@@ -89,7 +89,7 @@ function TerminalPreview() {
           <span className="shrink-0" style={{ color: '#dfff1f' }}>
             ›
           </span>
-          <div className="min-w-0 break-words">
+          <div className="min-w-0 wrap-break-word">
             <span style={{ color: 'var(--syn-punct)' }}>curl </span>
             <span style={{ color: 'var(--syn-str)' }}>
               &quot;api.9jacheckr.com/api/verify/01-5713&quot;
@@ -196,7 +196,7 @@ function Line({ p, children }: { p: string; children: React.ReactNode }) {
       >
         {p}
       </span>
-      <span className="min-w-0 break-words">{children}</span>
+      <span className="min-w-0 wrap-break-word">{children}</span>
     </div>
   );
 }
@@ -279,7 +279,7 @@ export default async function Home() {
 }`;
 
   return (
-    <div className="page-bg min-h-dvh w-full min-w-0 overflow-x-hidden text-[var(--text)]">
+    <div className="page-bg min-h-dvh w-full min-w-0 overflow-x-hidden text-foreground">
       <SiteNav />
 
       <section className="relative mx-auto max-w-[1120px] min-w-0 overflow-x-clip px-5 pb-20 pt-16 sm:px-6 sm:pt-24 lg:pb-28 lg:pt-28">
@@ -322,7 +322,7 @@ export default async function Home() {
               style={{ color: 'var(--text-2)' }}
             >
               Send a NAFDAC number. Get back the product name, manufacturer,
-              category, and registration dates — structured and ready to use.
+              category, and registration dates, structured and ready to use.
             </p>
 
             <div className="anim anim-d3 mt-8">
@@ -338,7 +338,7 @@ export default async function Home() {
                 href="https://t.me/NaijaCheckrBot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline underline-offset-3 transition-colors hover:text-[var(--text-2)]"
+                className="underline underline-offset-3 transition-colors hover:text-(--text-2)"
               >
                 Verify free on Telegram →
               </a>
@@ -347,7 +347,7 @@ export default async function Home() {
 
           <div className="anim anim-d2 relative min-w-0 overflow-x-clip">
             <div
-              className="pointer-events-none absolute inset-[-2rem] rounded-2xl opacity-60 blur-2xl sm:inset-[-2rem]"
+              className="pointer-events-none absolute -inset-8 rounded-2xl opacity-60 blur-2xl sm:-inset-8"
               style={{
                 background:
                   'radial-gradient(ellipse at center, rgba(223,255,31,0.06), transparent 70%)',
@@ -613,7 +613,7 @@ export default async function Home() {
           <div>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-[14px] font-semibold text-[var(--text)]"
+              className="inline-flex items-center gap-2 text-[14px] font-semibold text-foreground"
             >
               <span className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#dfff1f] text-[11px] font-bold text-black">
                 9
@@ -642,21 +642,21 @@ export default async function Home() {
               </p>
               <a
                 href="#features"
-                className="block transition-colors hover:text-[var(--text)]"
+                className="block transition-colors hover:text-foreground"
                 style={{ color: 'var(--text-3)' }}
               >
                 Features
               </a>
               <a
                 href="#api"
-                className="block transition-colors hover:text-[var(--text)]"
+                className="block transition-colors hover:text-foreground"
                 style={{ color: 'var(--text-3)' }}
               >
                 API
               </a>
               <Link
                 href="/login"
-                className="block transition-colors hover:text-[var(--text)]"
+                className="block transition-colors hover:text-foreground"
                 style={{ color: 'var(--text-3)' }}
               >
                 Sign in
@@ -673,7 +673,7 @@ export default async function Home() {
                 href="https://t.me/NaijaCheckrBot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block transition-colors hover:text-[var(--text)]"
+                className="block transition-colors hover:text-foreground"
                 style={{ color: 'var(--text-3)' }}
               >
                 Telegram bot
