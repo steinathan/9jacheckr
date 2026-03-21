@@ -41,6 +41,131 @@ Clients talk **only to our API**. The API is the only part that talks to NAFDAC�
 
 ---
 
+## Using the verify API (for integrators)
+
+Call the **9ja Checkr API** from your backend, script, or mobile app to look up a NAFDAC registration number and get **JSON** back. Every response has an **`ok`** boolean; errors always include a **`code`** and human-readable **`message`**.
+
+### 1. Get an API key
+
+1. Sign in on the **9ja Checkr** website (Google sign-in).
+2. Open the **dashboard** and create an API key under the keys section.
+3. **Copy the key when it is shown** — the full secret is only displayed once. Store it in an environment variable or secrets manager, not in source control.
+
+If the key is **rotated or revoked**, old keys stop working immediately (`INVALID_API_KEY`).
+
+### 2. Base URL
+
+**Production:** `https://api.9jacheckr.com`  
+
+Use **HTTPS**. All API paths are under `/api/...`.
+
+### 3. Make a verify request
+
+**Method:** `GET`  
+**URL:** `https://api.9jacheckr.com/api/verify/{nafdac}`
+
+Replace `{nafdac}` with the number from the product label (e.g. `01-5713`). If the value has spaces or odd characters, **URL-encode** it (e.g. `encodeURIComponent` in JavaScript).
+
+**Required header:**
+
+| Header | Value |
+| --- | --- |
+| `x-api-key` | Your API key (starts with `njc_`). |
+
+You do **not** need cookies or a session for verify — the key is enough.
+
+### 4. Success response (`200`)
+
+When the number is found on the register, the body looks like:
+
+```json
+{
+  "ok": true,
+  "product": {
+    "nafdac": "01-5713",
+    "name": "…",
+    "category": "…",
+    "source": "…",
+    "manufacturer": "…",
+    "approvedDate": "2025-07-30T00:00:00.000Z",
+    "expiryDate": "2030-07-29T00:00:00.000Z",
+    "ingredients": ["…"]
+  }
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `approvedDate` / `expiryDate` | ISO 8601 strings, or `null` if unknown. |
+| `ingredients` | Array of strings; may be empty. |
+
+### 5. Error responses
+
+Check **`ok: false`** and branch on **`code`** (and HTTP status) in your integration.
+
+| HTTP | `code` | What to do |
+| --- | --- | --- |
+| **401** | `MISSING_API_KEY` | Send the `x-api-key` header. |
+| **401** | `INVALID_API_KEY` | Key wrong, revoked, or typo — fix the key or create a new one in the dashboard. |
+| **400** | `INVALID_NAFDAC` | Bad or empty number in the URL — validate input before calling. |
+| **404** | `NOT_FOUND` | Valid request, but **no product** for that number (not on the register from NAFDAC’s side). Show a clear message to your user. |
+| **429** | `RATE_LIMITED` | Too many requests — **wait and retry** with backoff; don’t hammer the API. |
+| **500** | `INTERNAL_ERROR` | Something failed on our side — **retry later**; if it persists, contact us. |
+
+### 6. Rate limits
+
+Verify (and other routes under `/api`) share one limiter:
+
+| | |
+| --- | --- |
+| **Limit** | **60** requests |
+| **Window** | **15 minutes** |
+| **Counted by** | **Client IP** address |
+
+When you exceed this, the API responds with **429** and `code: RATE_LIMITED`. The response may include standard **`RateLimit-*`** headers (remaining quota and reset hint) — you can use those to back off before retrying.
+
+If you **self-host** the API, these numbers come from [`apps/server/src/middleware/rateLimiter.ts`](apps/server/src/middleware/rateLimiter.ts) and can differ from production.
+
+### 7. Example
+
+**cURL**
+
+```bash
+curl -sS "https://api.9jacheckr.com/api/verify/01-5713" \
+  -H "x-api-key: YOUR_API_KEY_HERE"
+```
+
+**JavaScript (fetch)**
+
+```js
+const res = await fetch(
+  'https://api.9jacheckr.com/api/verify/01-5713',
+  { headers: { 'x-api-key': process.env.CHECKR_API_KEY } },
+);
+const data = await res.json();
+if (data.ok) {
+  console.log(data.product);
+} else {
+  console.error(data.code, data.message);
+}
+```
+
+**From a browser:** your site’s origin must be allowed for CORS (we allow the official web app origin). For **server-side** or **mobile** apps, call the API directly with the key as above.
+
+### 8. Reference types in this repo
+
+If you are contributing or generating types from the server, see [`apps/server/src/types/types.ts`](apps/server/src/types/types.ts) (`VerifyApiSuccess`, `VerifyApiErrorBody`, `ProductPlain`).
+
+### 9. Running your own API
+
+This project is **open source**. If you deploy the stack yourself, base URL and limits depend on your hosting; see [`apps/server/README.md`](apps/server/README.md) and env configuration there.
+
+### License
+
+This project is open source under the terms in [`LICENSE`](LICENSE) in the repo root.
+
+---
+
 ## Run locally
 
 ```bash
