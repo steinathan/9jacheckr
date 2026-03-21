@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { CopyFieldButton } from './copy-field-button';
 
@@ -9,6 +10,7 @@ type ApiKeyInfo = {
   lastUsedAt: string | null;
   createdAt: string;
 };
+
 type MeJson = { ok: boolean; apiKey: ApiKeyInfo | null };
 type CreateJson = { ok: boolean; rawKey: string; apiKey: ApiKeyInfo };
 type RevokeJson = { ok: boolean; revokedAt: string | null };
@@ -20,52 +22,50 @@ type UsageMetrics = {
   errorCount: number;
   lastVerifyAt: string | null;
 };
+
 type MetricsJson = { ok: boolean; metrics: UsageMetrics };
+
+async function fetchApiKeyMe(base: string): Promise<ApiKeyInfo | null> {
+  const res = await fetch(`${base}/api/keys/me`, { credentials: 'include' });
+  const data = (await res.json()) as MeJson;
+  if (!res.ok || !data.ok) {
+    throw new Error('Could not load key status.');
+  }
+  return data.apiKey;
+}
+
+async function fetchApiKeyMetrics(base: string): Promise<UsageMetrics> {
+  const res = await fetch(`${base}/api/keys/metrics`, {
+    credentials: 'include',
+  });
+  const data = (await res.json()) as MetricsJson;
+  if (!res.ok || !data.ok || !data.metrics) {
+    throw new Error('Could not load usage metrics.');
+  }
+  return data.metrics;
+}
 
 export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
   const base = apiBaseUrl.replace(/\/$/, '');
-  const [info, setInfo] = useState<ApiKeyInfo | null | undefined>(undefined);
-  const [metrics, setMetrics] = useState<UsageMetrics | null | undefined>(
-    undefined,
-  );
+  const queryClient = useQueryClient();
   const [rawKey, setRawKey] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    if (!base) return;
-    setMsg(null);
-    const [meRes, metricsRes] = await Promise.all([
-      fetch(`${base}/api/keys/me`, { credentials: 'include' }),
-      fetch(`${base}/api/keys/metrics`, { credentials: 'include' }),
-    ]);
-    const meData = (await meRes.json()) as MeJson;
-    if (!meRes.ok) {
-      setInfo(null);
-      setMsg('Could not load key status.');
-      setMetrics(null);
-      return;
-    }
-    setInfo(meData.apiKey);
+  const keyQuery = useQuery({
+    queryKey: ['api-keys', 'me', base],
+    queryFn: () => fetchApiKeyMe(base),
+    enabled: Boolean(base),
+    staleTime: 60 * 1000,
+  });
 
-    const metricsData = (await metricsRes.json()) as MetricsJson;
-    if (metricsRes.ok && metricsData.ok && metricsData.metrics) {
-      setMetrics(metricsData.metrics);
-    } else {
-      setMetrics(null);
-    }
-  }, [base]);
+  const metricsQuery = useQuery({
+    queryKey: ['api-keys', 'metrics', base],
+    queryFn: () => fetchApiKeyMetrics(base),
+    enabled: Boolean(base),
+    staleTime: 60 * 1000,
+  });
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function createKey() {
-    if (!base) return;
-    setBusy(true);
-    setMsg(null);
-    setRawKey(null);
-    try {
+  const createMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`${base}/api/keys/create`, {
         method: 'POST',
         credentials: 'include',
@@ -73,40 +73,82 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
         body: '{}',
       });
       const data = (await res.json()) as CreateJson;
-      if (!res.ok) {
-        setMsg('Could not create or rotate key.');
-        return;
+      if (!res.ok || !data.ok) {
+        throw new Error('Could not create or rotate key.');
       }
+      return data;
+    },
+    onMutate: () => {
+      setRawKey(null);
+    },
+    onSuccess: (data) => {
       setRawKey(data.rawKey);
-      setInfo(data.apiKey);
-    } finally {
-      setBusy(false);
-    }
-  }
+      queryClient.setQueryData<ApiKeyInfo | null>(
+        ['api-keys', 'me', base],
+        data.apiKey,
+      );
+      void queryClient.invalidateQueries({
+        queryKey: ['api-keys', 'metrics', base],
+      });
+    },
+  });
 
-  async function revokeKey() {
-    if (!base) return;
-    setBusy(true);
-    setMsg(null);
-    setRawKey(null);
-    try {
+  const revokeMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`${base}/api/keys/me`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      const data = (await res.json()) as RevokeJson;
-      if (!res.ok && res.status !== 404) {
-        setMsg('Could not revoke key.');
-        return;
+      if (res.status === 404) {
+        return { ok: false as const };
       }
-      setInfo(null);
-      if (data.ok) void load();
-    } finally {
-      setBusy(false);
-    }
+      const data = (await res.json()) as RevokeJson;
+      if (!res.ok) {
+        throw new Error('Could not revoke key.');
+      }
+      return data;
+    },
+    onMutate: () => {
+      setRawKey(null);
+    },
+    onSuccess: () => {
+      queryClient.setQueryData<ApiKeyInfo | null>(
+        ['api-keys', 'me', base],
+        null,
+      );
+      void queryClient.invalidateQueries({
+        queryKey: ['api-keys', 'metrics', base],
+      });
+    },
+  });
+
+  const busy = createMutation.isPending || revokeMutation.isPending;
+  const info = keyQuery.data;
+  const metrics = metricsQuery.data;
+  const mutationError =
+    createMutation.error?.message ?? revokeMutation.error?.message ?? null;
+  const msg = mutationError;
+
+  if (!base) {
+    return (
+      <div
+        className="rounded-xl border px-4 py-3 text-[13px]"
+        style={{
+          borderColor: 'rgba(251,191,36,0.25)',
+          background: 'rgba(251,191,36,0.07)',
+          color: 'rgb(253,230,138)',
+        }}
+      >
+        Set{' '}
+        <span className="font-mono text-amber-200">
+          NEXT_PUBLIC_API_BASE_URL
+        </span>{' '}
+        in <span className="font-mono">.env.local</span>.
+      </div>
+    );
   }
 
-  if (info === undefined) {
+  if (keyQuery.isPending) {
     return (
       <div className="space-y-4">
         <div
@@ -145,6 +187,33 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
     );
   }
 
+  if (keyQuery.isError) {
+    return (
+      <div
+        className="flex flex-col items-start gap-3 rounded-xl border px-4 py-4 text-[13px]"
+        style={{
+          borderColor: 'rgba(251,191,36,0.25)',
+          background: 'rgba(251,191,36,0.07)',
+          color: 'rgb(253,230,138)',
+        }}
+      >
+        <div className="flex items-start gap-2">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+          {keyQuery.error instanceof Error
+            ? keyQuery.error.message
+            : 'Could not load key status.'}
+        </div>
+        <button
+          type="button"
+          onClick={() => void keyQuery.refetch()}
+          className="rounded-md border border-amber-400/40 px-3 py-1.5 text-[12px] font-medium text-amber-100 hover:bg-amber-500/10 focus-visible-ring"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -154,7 +223,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   return (
     <div className="space-y-4">
-      {metrics !== undefined && metrics !== null ? (
+      {metricsQuery.isSuccess && metrics ? (
         <div
           className="rounded-xl border px-5 py-4"
           style={{
@@ -200,6 +269,21 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               : 'No verify requests yet'}
           </p>
         </div>
+      ) : metricsQuery.isPending ? (
+        <div
+          className="rounded-xl border p-5"
+          style={{
+            borderColor: 'var(--border)',
+            background: 'var(--bg-subtle)',
+          }}
+        >
+          <div className="skeleton mb-4 h-4 w-32 rounded" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="skeleton h-14 rounded-lg" />
+            ))}
+          </div>
+        </div>
       ) : null}
 
       <div
@@ -227,7 +311,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => void revokeKey()}
+                onClick={() => revokeMutation.mutate()}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-[12px] font-medium transition-colors disabled:opacity-40 focus-visible-ring"
                 style={{ borderColor: 'var(--border)', color: 'var(--text-2)' }}
                 onMouseEnter={(e) => {
@@ -253,7 +337,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
             <button
               type="button"
               disabled={busy}
-              onClick={() => void createKey()}
+              onClick={() => createMutation.mutate()}
               className="btn-primary h-8 text-[13px] disabled:opacity-50 focus-visible-ring"
             >
               {info ? (
