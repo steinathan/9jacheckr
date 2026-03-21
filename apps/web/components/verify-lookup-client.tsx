@@ -197,18 +197,6 @@ export function VerifyLookupClient() {
           >
             01-5713
           </button>
-          {' · '}
-          <button
-            type="button"
-            className="font-mono text-[12px] text-(--text-2) underline decoration-(--border) underline-offset-4 transition hover:text-[#dfff1f]"
-            onClick={() => setValue('015713')}
-          >
-            015713
-          </button>
-          <span className="hidden sm:inline">
-            {' '}
-            — hyphens and spaces are optional.
-          </span>
         </p>
       </form>
 
