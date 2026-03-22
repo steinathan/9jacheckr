@@ -170,7 +170,7 @@ export function VerifyLookupClient() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-[15px] font-semibold text-black transition hover:bg-[var(--accent-hover)] focus-visible-ring disabled:cursor-not-allowed disabled:opacity-45 sm:h-auto sm:min-w-[148px]"
+            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-xl bg-(--accent) px-6 text-[15px] font-semibold text-black transition hover:bg-(--accent-hover) focus-visible-ring disabled:cursor-not-allowed disabled:opacity-45 sm:h-auto sm:min-w-[148px]"
           >
             {loading ? (
               <>
@@ -192,7 +192,7 @@ export function VerifyLookupClient() {
           Examples:{' '}
           <button
             type="button"
-            className="font-mono text-[12px] text-(--text-2) underline decoration-(--border) underline-offset-4 transition hover:text-[var(--accent)]"
+            className="font-mono text-[12px] text-(--text-2) underline decoration-(--border) underline-offset-4 transition hover:text-(--accent)"
             onClick={() => setValue('01-5713')}
           >
             01-5713
@@ -368,7 +368,7 @@ export function VerifyLookupClient() {
             Building an app?{' '}
             <Link
               href="/login?next=/dashboard"
-              className="font-medium text-[var(--accent)] underline underline-offset-4 transition-colors hover:text-[var(--accent-hover)]"
+              className="font-medium text-(--accent) underline underline-offset-4 transition-colors hover:text-(--accent-hover)"
             >
               Get an API key
             </Link>{' '}

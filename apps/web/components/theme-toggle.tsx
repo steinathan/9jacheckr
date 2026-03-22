@@ -78,10 +78,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   if (!mounted) {
     return (
       <div
-        className={cn(
-          'h-8 w-[4.25rem] shrink-0 rounded-md border',
-          className,
-        )}
+        className={cn('h-8 w-17 shrink-0 rounded-md border', className)}
         style={{
           borderColor: 'var(--border-subtle)',
           background: 'var(--bg-subtle)',
@@ -118,7 +115,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           role="listbox"
           aria-label="Theme"
           className={cn(
-            'absolute z-[100] mt-1 min-w-[10rem] rounded-lg border py-1',
+            'absolute z-100 mt-1 min-w-40 rounded-lg border py-1',
             menuAlign === 'right' ? 'right-0' : 'left-0',
           )}
           style={{

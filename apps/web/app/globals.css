@@ -90,6 +90,13 @@
   --btn-danger-hover-border: rgba(239, 68, 68, 0.4);
   --btn-danger-hover-fg: rgb(252, 165, 165);
   --btn-danger-hover-bg: rgba(239, 68, 68, 0.08);
+
+  --btn-accent-outline-border: rgba(223, 255, 31, 0.5);
+  --btn-accent-outline-bg: rgba(223, 255, 31, 0.08);
+  --btn-accent-outline-hover-border: rgba(223, 255, 31, 0.7);
+  --btn-accent-outline-hover-bg: rgba(223, 255, 31, 0.14);
+  --btn-accent-outline-fg: var(--accent);
+  --btn-accent-outline-hover-fg: var(--accent-hover);
 }
 
 html.light {
@@ -182,6 +189,13 @@ html.light {
   --btn-danger-hover-border: rgba(220, 38, 38, 0.35);
   --btn-danger-hover-fg: #b91c1c;
   --btn-danger-hover-bg: rgba(239, 68, 68, 0.1);
+
+  --btn-accent-outline-border: rgba(45, 64, 18, 0.42);
+  --btn-accent-outline-bg: rgba(45, 64, 18, 0.1);
+  --btn-accent-outline-hover-border: rgba(35, 52, 14, 0.58);
+  --btn-accent-outline-hover-bg: rgba(45, 64, 18, 0.16);
+  --btn-accent-outline-fg: #2d4a0f;
+  --btn-accent-outline-hover-fg: #3f6212;
 }
 
 @theme inline {
