@@ -24,9 +24,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: '9ja Checkr - NAFDAC number lookup API',
+  title: '9ja Checkr — NAFDAC registration lookup API',
   description:
-    'Look up a NAFDAC registration number and get product details as JSON.',
+    'Developer API and tools for NAFDAC registration number lookup (structured JSON). Independent service — not affiliated with NAFDAC.',
 };
 
 export default function RootLayout({

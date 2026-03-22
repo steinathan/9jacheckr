@@ -4,9 +4,9 @@ import { SiteNav } from '@/components/site-nav';
 import { VerifyLookupClient } from '@/components/verify-lookup-client';
 
 export const metadata: Metadata = {
-  title: 'Verify a NAFDAC number · 9ja Checkr',
+  title: 'Look up a NAFDAC number · 9ja Checkr',
   description:
-    'Free lookup: enter a NAFDAC registration number and see product details from the official register. No account required.',
+    'Free lookup: enter a NAFDAC registration number and see structured details from the public register (via 9ja Checkr). Independent service — not NAFDAC. No account required.',
 };
 
 export default function VerifyPage() {
@@ -76,6 +76,12 @@ export default function VerifyPage() {
             className="transition-colors hover:text-foreground"
           >
             API docs
+          </Link>
+          <Link
+            href="/disclaimer"
+            className="transition-colors hover:text-foreground"
+          >
+            Disclaimer
           </Link>
           <a
             href="https://t.me/NaijaCheckrBot"

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { SiteNav } from '@/components/site-nav';
 import { LoginForm } from '@/components/login/login-form';
 
@@ -17,8 +18,15 @@ export default function LoginPage() {
               className="mt-2 text-[14px] leading-relaxed"
               style={{ color: 'var(--text-2)' }}
             >
-              Create and manage your API keys to start verifying NAFDAC product
-              registrations.
+              Create and manage your API keys to integrate NAFDAC registration
+              lookups. Independent service — see{' '}
+              <Link
+                href="/disclaimer"
+                className="font-medium text-(--accent) underline underline-offset-2 hover:text-(--accent-hover)"
+              >
+                disclaimer
+              </Link>
+              .
             </p>
           </div>
 

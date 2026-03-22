@@ -254,8 +254,8 @@ function Punc({ children }: { children: React.ReactNode }) {
 const FEATURES = [
   {
     icon: ShieldCheck,
-    title: 'Authoritative data',
-    body: 'Results sourced directly from the NAFDAC public register. You get the real record, not a cached approximation.',
+    title: 'Public register data',
+    body: 'We automate NAFDAC’s public lookup flow and return structured fields. Cached where helpful — confirm critical outcomes on official channels.',
   },
   {
     icon: Zap,
@@ -270,7 +270,7 @@ const FEATURES = [
   {
     icon: Globe,
     title: 'Works everywhere',
-    body: 'Any language, any runtime. If you can make an HTTP request you can verify a product registration.',
+    body: 'Any language, any runtime. If you can make an HTTP request you can look up a registration in your app.',
   },
 ] as const;
 
@@ -287,7 +287,7 @@ const STEPS = [
   },
   {
     n: '03',
-    title: 'Start verifying',
+    title: 'Start looking up',
     body: 'Pass the NAFDAC number in the path and your key as a header. Parse the JSON in your app.',
   },
 ] as const;
@@ -346,12 +346,12 @@ export default async function Home() {
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ background: 'var(--accent)' }}
                 />
-                NAFDAC Verification API
+                NAFDAC registration lookup API
               </span>
             </div>
 
             <h1 className="anim anim-d1 mt-6 font-display text-[2.6rem] font-semibold leading-[1.06] sm:text-[3.2rem] lg:text-[3.5rem]">
-              Verify Nigerian
+              Look up Nigerian
               <br />
               product registrations.
               <br />
@@ -362,8 +362,16 @@ export default async function Home() {
               className="anim anim-d2 mt-6 max-w-[440px] text-[16px] leading-[1.75]"
               style={{ color: 'var(--text-2)' }}
             >
-              Send a NAFDAC number. Get back the product name, manufacturer,
-              category, and registration dates, structured and ready to use.
+              Send a NAFDAC number. Get back structured product details from the
+              public register — an independent developer service, not a
+              government API.{' '}
+              <Link
+                href="/disclaimer"
+                className="underline underline-offset-2 transition-colors hover:text-foreground"
+              >
+                Disclaimer
+              </Link>
+              .
             </p>
 
             <div className="anim anim-d3 mt-8">
@@ -605,7 +613,7 @@ export default async function Home() {
               API Pro
             </p>
             <h2 className="mt-3 font-display text-[1.65rem] font-semibold sm:text-[1.9rem]">
-              Batch verify &amp; product search
+              Batch lookup &amp; product search
             </h2>
             <p
               className="mt-3 text-[14px] leading-relaxed"
@@ -668,8 +676,8 @@ export default async function Home() {
                 className="mt-2 text-[15px] leading-relaxed"
                 style={{ color: 'var(--text-2)' }}
               >
-                Sign in with Google, create a key, and start verifying in under
-                two minutes.
+                Sign in with Google, create a key, and start integrating lookups
+                in under two minutes.
               </p>
               <ul className="mt-5 space-y-2">
                 {[
@@ -722,8 +730,15 @@ export default async function Home() {
               className="mt-2 max-w-[240px] text-[12px] leading-relaxed"
               style={{ color: 'var(--text-3)' }}
             >
-              NAFDAC registration lookup API for developers and teams. Not
-              affiliated with NAFDAC.
+              Independent NAFDAC registration lookup for developers and teams —
+              not affiliated with NAFDAC. Results are informational; see our{' '}
+              <Link
+                href="/disclaimer"
+                className="underline underline-offset-2 transition-colors hover:text-foreground"
+              >
+                disclaimer
+              </Link>
+              .
             </p>
             <p className="mt-4 text-[12px]" style={{ color: 'var(--text-3)' }}>
               © {new Date().getFullYear()} 9ja Checkr
@@ -765,6 +780,13 @@ export default async function Home() {
                 style={{ color: 'var(--text-3)' }}
               >
                 Sign in
+              </Link>
+              <Link
+                href="/disclaimer"
+                className="block transition-colors hover:text-foreground"
+                style={{ color: 'var(--text-3)' }}
+              >
+                Disclaimer
               </Link>
             </div>
             <div className="space-y-2.5">

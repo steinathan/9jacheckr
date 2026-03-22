@@ -90,17 +90,32 @@ export function ProApiEndpointsDocs({ apiBaseUrl }: Props) {
 
   return (
     <div className="space-y-8">
+      <p
+        className="text-[12px] leading-relaxed"
+        style={{ color: 'var(--text-3)' }}
+      >
+        9ja Checkr is an independent developer API — not NAFDAC or a government
+        feed. Endpoints named <code className="font-mono">/api/verify</code>{' '}
+        return structured data from the public register flow we automate. See{' '}
+        <a
+          href="/disclaimer"
+          className="font-medium text-(--accent) underline underline-offset-2 hover:text-(--accent-hover)"
+        >
+          disclaimer
+        </a>
+        .
+      </p>
       <div>
         <h3 className="text-[14px] font-semibold text-foreground">
-          Batch verify
+          Batch lookup
         </h3>
         <p
           className="mt-1 text-[13px] leading-relaxed"
           style={{ color: 'var(--text-2)' }}
         >
-          Verify up to 40 NAFDAC numbers in one request. Each successful or
+          Query up to 40 NAFDAC numbers in one request. Each successful or
           not-found result counts toward your monthly API usage (same pool as
-          single verify and product search).
+          single lookup and product search).
         </p>
         {endpointRow('POST', '/api/verify/batch', 'post')}
         <div className="code-surface mt-4">
@@ -160,7 +175,7 @@ export function ProApiEndpointsDocs({ apiBaseUrl }: Props) {
           and each ingredient. Several words mean every word must match
           somewhere (order does not matter). Results are ranked by relevance.
           Each successful response counts one unit toward the same monthly API
-          usage cap as verifies. Query{' '}
+          usage cap as lookups. Query{' '}
           <code className="font-mono text-[12px] text-(--text-3)">q</code> must
           be at least 2 characters. Optional{' '}
           <code className="font-mono text-[12px] text-(--text-3)">limit</code>{' '}

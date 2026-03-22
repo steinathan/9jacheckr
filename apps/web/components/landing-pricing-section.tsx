@@ -8,7 +8,7 @@ const API_TIERS = [
     period: 'forever',
     description: 'Build and test integrations.',
     features: [
-      '300 API uses / month (verifies)',
+      '300 API uses / month (lookups)',
       '1 API key',
       'Lower rate limits',
       'No detailed dashboard metrics',
@@ -23,11 +23,11 @@ const API_TIERS = [
     period: '/ month',
     description: 'Production apps, teams, and commercial use.',
     features: [
-      '50,000 API uses / month (verifies + search)',
+      '50,000 API uses / month (lookups + search)',
       'Multiple API keys',
       'Higher rate limits & priority handling',
       'Full usage metrics in dashboard',
-      'Batch verify & product search (our database)',
+      'Batch lookup & product search (our database)',
       'Commercial use included',
     ],
     highlighted: true,

@@ -36,6 +36,9 @@ export function SiteNav() {
             <Link href="/#api" className="btn-ghost">
               API
             </Link>
+            <Link href="/disclaimer" className="btn-ghost">
+              Disclaimer
+            </Link>
             <a
               href="https://t.me/NaijaCheckrBot"
               target="_blank"
@@ -50,7 +53,7 @@ export function SiteNav() {
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Link
             href="/verify"
-            className="btn-ghost h-8 md:hidden focus-visible-ring"
+            className="btn-ghost h-8 md:hidden! focus-visible-ring"
           >
             Verify
           </Link>

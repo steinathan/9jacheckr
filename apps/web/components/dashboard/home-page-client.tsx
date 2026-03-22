@@ -145,7 +145,7 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
               className="mt-1 text-[13px] leading-relaxed"
               style={{ color: 'var(--text-2)' }}
             >
-              Batch verify and product search are included with your API Pro
+              Batch lookup and product search are included with your API Pro
               plan. Search runs against{' '}
               <span className="font-medium text-foreground">
                 our indexed product database
@@ -158,7 +158,7 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
                 x-api-key
               </code>{' '}
               header; each batch row and each successful search share the same
-              monthly API usage cap as single verifies.
+              monthly API usage cap as single lookups.
             </p>
           </div>
           <ProApiEndpointsDocs apiBaseUrl={apiBaseUrl} />

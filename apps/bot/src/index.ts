@@ -39,7 +39,8 @@ async function main() {
       [
         '<b>9ja Checkr</b>',
         '',
-        'Verify Nigerian product NAFDAC numbers.',
+        'Look up Nigerian product NAFDAC registration numbers (independent service — not NAFDAC).',
+        '<a href="https://9jacheckr.xyz/disclaimer">Disclaimer</a>',
         '',
         'Commands:',
         '/verify &lt;number&gt; — look up a registration',

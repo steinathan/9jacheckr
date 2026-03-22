@@ -2,6 +2,8 @@
 
 Look up **NAFDAC registration numbers** and get product details as **JSON** through an HTTP API, a web dashboard, or a Telegram bot.
 
+**Disclaimer:** 9ja Checkr is **not affiliated with NAFDAC** or any government body. We **automate NAFDAC’s public web lookup** and return structured data; we are **not** an official NAFDAC API. Results are **informational** — confirm compliance and critical decisions on **official channels**. Integrators should disclose this to their own users. Website: [9jacheckr.xyz/disclaimer](https://9jacheckr.xyz/disclaimer).
+
 ---
 
 ## How the NAFDAC lookup works

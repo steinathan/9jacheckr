@@ -133,7 +133,7 @@ export function ApiProUpgradeCta({ apiBaseUrl, variant = 'banner' }: Props) {
           </p>
         </div>
         <p className="text-[11px] leading-snug text-(--text-3)">
-          Higher limits, metrics, batch verify &amp; database search.
+          Higher limits, metrics, batch lookup &amp; database search.
         </p>
         <button
           type="button"
@@ -203,9 +203,9 @@ export function ApiProUpgradeCta({ apiBaseUrl, variant = 'banner' }: Props) {
               className="mt-1 max-w-xl text-[13px] leading-relaxed"
               style={{ color: 'var(--text-2)' }}
             >
-              Unlock 50k API uses/month (verifies + searches), dashboard
-              metrics, multiple keys, batch verify, and database-backed product
-              search. Subscribe when you need it — manage billing from{' '}
+              Unlock 50k API uses/month (lookups + searches), dashboard metrics,
+              multiple keys, batch lookup, and database-backed product search.
+              Subscribe when you need it — manage billing from{' '}
               <Link
                 href="/dashboard/keys"
                 className="font-medium text-(--accent) underline underline-offset-2 hover:text-(--accent-hover)"

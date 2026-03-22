@@ -328,7 +328,7 @@ export function VerifyLookupClient() {
                     style={{ color: 'var(--accent)' }}
                     strokeWidth={2}
                   />
-                  NAFDAC register
+                  Public register data
                 </div>
               </div>
             </div>
@@ -398,8 +398,16 @@ export function VerifyLookupClient() {
                 color: 'var(--text-3)',
               }}
             >
-              Data is fetched from the official NAFDAC product register. Always
-              match what you see on the pack and buy from sellers you trust.
+              We automate NAFDAC&apos;s public lookup flow; results may be
+              cached. Not affiliated with NAFDAC — see our{' '}
+              <Link
+                href="/disclaimer"
+                className="font-medium text-(--accent) underline underline-offset-2 transition-colors hover:text-(--accent-hover)"
+              >
+                disclaimer
+              </Link>
+              . Always match what you see on the pack and buy from sellers you
+              trust.
             </p>
           </div>
 
@@ -411,7 +419,7 @@ export function VerifyLookupClient() {
             >
               Get an API key
             </Link>{' '}
-            for automated checks.
+            for automated lookups.
           </p>
         </div>
       ) : null}

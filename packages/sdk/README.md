@@ -2,7 +2,7 @@
 
 ## @9jacheckr/sdk
 
-Official Node.js client for the [9ja Checkr](https://9jacheckr.xyz) NAFDAC verification API: single verify, batch verify (API Pro), and product search (API Pro). Monthly **API usage** quotas are enforced server-side: each verify row (incl. batch) and each successful search count toward the same cap (e.g. Free 300 / Pro 50,000 per UTC month — see product docs).
+Node.js client for the [9ja Checkr](https://9jacheckr.xyz) NAFDAC **registration lookup** API (independent service — not NAFDAC; see [disclaimer](https://9jacheckr.xyz/disclaimer)): single lookup (`verify`), batch lookup (API Pro), and product search (API Pro). Monthly **API usage** quotas are enforced server-side: each lookup row (incl. batch) and each successful search count toward the same cap (e.g. Free 300 / Pro 50,000 per UTC month — see product docs).
 
 ## Requirements
 
@@ -34,7 +34,7 @@ if (result.ok) {
 }
 ```
 
-**Batch verify (API Pro)** — up to 40 NAFDAC numbers per request; each row counts toward your monthly API usage quota.
+**Batch lookup (API Pro)** — up to 40 NAFDAC numbers per request; each row counts toward your monthly API usage quota.
 
 ```ts
 const batch = await client.verifyBatch(['01-5713', '04-8127']);
@@ -49,7 +49,7 @@ if (batch.ok) {
 }
 ```
 
-**Product search (API Pro)** — full-text search over indexed products. Each successful search counts toward the same monthly API usage quota as verifies.
+**Product search (API Pro)** — full-text search over indexed products. Each successful search counts toward the same monthly API usage quota as lookups.
 
 ```ts
 const search = await client.searchProducts('sardine', { limit: 10 });
