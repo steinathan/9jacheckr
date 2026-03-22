@@ -326,7 +326,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
           <div className="skeleton mb-4 h-4 w-32 rounded" />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="skeleton h-[4.25rem] rounded-lg" />
+              <div key={i} className="skeleton h-17 rounded-lg" />
             ))}
           </div>
         </div>
@@ -700,7 +700,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="skeleton h-[4.25rem] rounded-lg" />
+              <div key={i} className="skeleton h-17 rounded-lg" />
             ))}
           </div>
         </div>
@@ -1060,7 +1060,7 @@ function StatBox({
 }) {
   return (
     <div
-      className="flex min-h-[4.25rem] min-w-0 flex-col justify-center rounded-lg border px-2 py-2.5 sm:min-h-0 sm:px-3 sm:py-3"
+      className="flex min-h-17 min-w-0 flex-col justify-center rounded-lg border px-2 py-2.5 sm:min-h-0 sm:px-3 sm:py-3"
       style={{
         borderColor: 'var(--border-subtle)',
         background: 'var(--bg-raised)',
