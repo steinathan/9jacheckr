@@ -51,7 +51,7 @@ export function registerPaymentsCommand(bot: Telegraf, apiBaseUrl: string) {
           '',
           'No recorded payments yet. Successful Paystack charges appear.',
           '',
-          'Use /upgrade to subscribe.',
+          'Use /upgrade to prepay Bot Pro.',
         ].join('\n'),
         { parse_mode: 'HTML', reply_markup: verifyButtonMarkup },
       );
@@ -72,8 +72,12 @@ export function registerPaymentsCommand(bot: Telegraf, apiBaseUrl: string) {
           : '—';
       const amt = formatMajor(tx.amountKobo, tx.currency);
       const ch = tx.channel ? ` · ${tx.channel}` : '';
+      const mo =
+        typeof tx.months === 'number' && tx.months > 0
+          ? ` · ${tx.months} mo prepay`
+          : '';
       lines.push(
-        `• ${amt}${ch}`,
+        `• ${amt}${mo}${ch}`,
         `  <code>${escapeHtml(tx.reference.slice(0, 32))}</code>`,
         `  ${escapeHtml(when)}`,
         '',

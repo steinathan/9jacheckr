@@ -16,6 +16,8 @@ const botBillingPaymentSchema = new Schema(
     paidAt: { type: Date, default: null },
     description: { type: String, default: null, trim: true },
     sourceEvent: { type: String, default: null, trim: true },
+    months: { type: Number, default: null },
+    extensionAppliedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

@@ -52,11 +52,13 @@ export function registerStatusCommand(bot: Telegraf, apiBaseUrl: string) {
     if (r.plan === 'pro_bot') {
       extra.push(
         r.periodEnd != null
-          ? `<b>Current period ends (UTC):</b> ${formatUtcDate(r.periodEnd)}`
-          : '<i>Billing period end will show here after the next sync — try again shortly.</i>',
+          ? `<b>Prepaid period ends (UTC):</b> ${formatUtcDate(r.periodEnd)}`
+          : '<i>Period end appears here after Paystack confirms your payment.</i>',
       );
     } else {
-      extra.push('Use /upgrade for Bot Pro (no daily cap).');
+      extra.push(
+        'Use /upgrade to prepay Bot Pro (no daily cap until it expires).',
+      );
     }
 
     await ctx.reply([planLine, '', ...usageLines, '', ...extra].join('\n'), {

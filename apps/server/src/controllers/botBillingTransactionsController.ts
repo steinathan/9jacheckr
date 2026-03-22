@@ -1,19 +1,25 @@
 import type { Request, Response } from 'express';
 import { listTelegramBotBillingPayments } from '../services/botBillingPaymentService.js';
+import { parseBotTelegramId } from '../utils/botTelegramId.js';
 
 export async function botBillingTransactionsController(
   req: Request,
   res: Response,
 ) {
-  const telegramId = String(
-    (req.body as { telegramId?: string })?.telegramId ?? '',
-  ).trim();
+  const body = (req.body ?? {}) as {
+    telegramId?: unknown;
+    page?: unknown;
+    perPage?: unknown;
+  };
+  const telegramId = parseBotTelegramId(body.telegramId);
   if (!telegramId) {
-    res.status(400).json({ ok: false, message: 'telegramId is required.' });
+    res.status(400).json({
+      ok: false,
+      message: 'telegramId must be a numeric Telegram user id.',
+    });
     return;
   }
 
-  const body = (req.body ?? {}) as { page?: unknown; perPage?: unknown };
   const pageRaw = body.page;
   const perPageRaw = body.perPage;
   const page =

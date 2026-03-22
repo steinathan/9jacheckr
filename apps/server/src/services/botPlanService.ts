@@ -16,12 +16,34 @@ export type BotStatusSnapshot = {
   periodEnd: string | null;
 };
 
+async function syncExpiredBotProToFree(
+  telegramId: string,
+  now: Date,
+): Promise<void> {
+  await BotSubscriptionModel.updateOne(
+    {
+      telegramId,
+      plan: 'pro_bot',
+      status: 'active',
+      currentPeriodEnd: { $lt: now },
+    },
+    {
+      $set: {
+        plan: 'free',
+        status: 'inactive',
+        currentPeriodEnd: null,
+      },
+    },
+  );
+}
+
 /**
  * Plan, today’s usage (UTC), lifetime lookup count, and Pro billing window.
  */
 export async function getBotStatusSnapshot(
   telegramId: string,
 ): Promise<BotStatusSnapshot> {
+  const now = new Date();
   const dateKey = currentUtcDayKey();
   const [sub, usageDoc, profile] = await Promise.all([
     BotSubscriptionModel.findOne({ telegramId }).lean(),
@@ -33,7 +55,9 @@ export async function getBotStatusSnapshot(
   let periodEnd: string | null = null;
   if (sub?.plan === 'pro_bot' && sub.status === 'active') {
     const end = sub.currentPeriodEnd;
-    if (!end || end >= new Date()) {
+    if (end && end < now) {
+      await syncExpiredBotProToFree(telegramId, now);
+    } else if (!end || end >= now) {
       plan = 'pro_bot';
       periodEnd = end ? end.toISOString() : null;
     }
@@ -49,10 +73,14 @@ export async function getBotStatusSnapshot(
 export async function resolveBotPlan(
   telegramId: string,
 ): Promise<ResolvedBotPlan> {
+  const now = new Date();
   const doc = await BotSubscriptionModel.findOne({ telegramId }).lean();
   if (!doc) return 'free';
   if (doc.plan !== 'pro_bot' || doc.status !== 'active') return 'free';
-  if (doc.currentPeriodEnd && doc.currentPeriodEnd < new Date()) return 'free';
+  if (doc.currentPeriodEnd && doc.currentPeriodEnd < now) {
+    await syncExpiredBotProToFree(telegramId, now);
+    return 'free';
+  }
   return 'pro_bot';
 }
 

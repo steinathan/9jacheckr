@@ -46,9 +46,9 @@ async function main() {
         '/verify &lt;number&gt; — look up a registration',
         '/status — plan, total lookups, and today’s usage (UTC)',
         '/payments — Bot Pro payment history (Paystack)',
-        '/upgrade — Bot Pro (no daily lookup cap)',
+        '/upgrade — prepay Bot Pro (choose months, then Paystack link; no daily cap until it expires)',
         '',
-        '<i>Without Bot Pro: up to 5 lookups per UTC day. Bot Pro: unlimited. /status always shows your plan and usage.</i>',
+        '<i>Free tier: 5 lookups per UTC day. Bot Pro: unlimited until prepaid period ends. /status shows your plan.</i>',
       ].join('\n'),
       { parse_mode: 'HTML', reply_markup: verifyButtonMarkup },
     );

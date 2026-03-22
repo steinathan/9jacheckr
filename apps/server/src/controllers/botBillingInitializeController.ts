@@ -1,5 +1,12 @@
 import type { Request, Response } from 'express';
-import { initializeBotProTransaction } from '../services/paystackService.js';
+import {
+  botProMonthlyKobo,
+  botProPrepayMaxMonths,
+  isValidPrepayMonths,
+  parsePrepayMonths,
+} from '../services/botProPrepay.js';
+import { initializeBotProPrepayTransaction } from '../services/paystackService.js';
+import { parseBotTelegramId } from '../utils/botTelegramId.js';
 
 function absoluteAppUrl(raw: string): string | null {
   const base = raw.replace(/\/$/, '').trim();
@@ -27,14 +34,24 @@ export async function botBillingInitializeController(
   req: Request,
   res: Response,
 ) {
-  const telegramId = String(
-    (req.body as { telegramId?: string })?.telegramId ?? '',
-  ).trim();
+  const body = req.body as { telegramId?: unknown; months?: unknown };
+  const telegramId = parseBotTelegramId(body.telegramId);
   if (!telegramId) {
     res.status(400).json({
       ok: false,
       code: 'INVALID_BODY',
-      message: 'telegramId is required',
+      message: 'telegramId must be a numeric Telegram user id.',
+    });
+    return;
+  }
+
+  const months = parsePrepayMonths(body.months);
+  if (months == null || !isValidPrepayMonths(months)) {
+    const max = botProPrepayMaxMonths();
+    res.status(400).json({
+      ok: false,
+      code: 'INVALID_BODY',
+      message: `months must be a whole number from 1 to ${max}.`,
     });
     return;
   }
@@ -49,9 +66,10 @@ export async function botBillingInitializeController(
     return;
   }
   const callbackUrl = `${origin}/bot/billing/success?via=telegram`;
-  const result = await initializeBotProTransaction({
+  const result = await initializeBotProPrepayTransaction({
     email: botCheckoutEmail(telegramId),
     telegramId,
+    months,
     callbackUrl,
   });
   if (!result.ok) {
@@ -65,5 +83,7 @@ export async function botBillingInitializeController(
   res.status(200).json({
     ok: true,
     authorizationUrl: result.authorizationUrl,
+    monthlyKobo: botProMonthlyKobo(),
+    maxMonths: botProPrepayMaxMonths(),
   });
 }

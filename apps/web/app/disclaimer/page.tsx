@@ -22,13 +22,12 @@ export default function DisclaimerPage() {
           style={{ color: 'var(--text-2)' }}
         >
           <p>
-            This document provides general information about 9ja Checkr and
-            how to interpret its outputs. It does not constitute legal,
-            regulatory, or professional advice. For any regulated,
-            safety-critical, or high-stakes decisions, users should consult
-            qualified professionals and refer directly to official channels
-            provided by the National Agency for Food and Drug Administration and
-            Control (NAFDAC).
+            This document provides general information about 9ja Checkr and how
+            to interpret its outputs. It does not constitute legal, regulatory,
+            or professional advice. For any regulated, safety-critical, or
+            high-stakes decisions, users should consult qualified professionals
+            and refer directly to official channels provided by the National
+            Agency for Food and Drug Administration and Control (NAFDAC).
           </p>
         </div>
 
@@ -49,8 +48,8 @@ export default function DisclaimerPage() {
           <p>
             9ja Checkr provides a data lookup and automation layer designed to
             assist users in retrieving and interacting with product registration
-            information that is publicly accessible through NAFDAC&apos;s official
-            channels.
+            information that is publicly accessible through NAFDAC&apos;s
+            official channels.
           </p>
           <p>
             The service processes and presents this information in a structured
@@ -104,9 +103,8 @@ export default function DisclaimerPage() {
             API and Downstream Usage
           </h2>
           <p>
-            Users integrating 9ja Checkr into their own applications or
-            services are responsible for clearly communicating to their end
-            users that:
+            Users integrating 9ja Checkr into their own applications or services
+            are responsible for clearly communicating to their end users that:
           </p>
           <ul className="list-disc space-y-2 pl-5">
             <li>The data is sourced from an independent lookup service</li>
@@ -117,8 +115,8 @@ export default function DisclaimerPage() {
           </ul>
           <p>
             API users should ensure their own terms of service appropriately
-            address data reliance, limitations, and liability, and are encouraged
-            to seek independent legal advice where necessary.
+            address data reliance, limitations, and liability, and are
+            encouraged to seek independent legal advice where necessary.
           </p>
         </section>
 

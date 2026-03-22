@@ -2,7 +2,11 @@ import mongoose from 'mongoose';
 import { ApiSubscriptionModel } from '../models/apiSubscriptionModel.js';
 import { BotSubscriptionModel } from '../models/botSubscriptionModel.js';
 import { recordApiProPaymentFromWebhook } from './apiBillingPaymentService.js';
-import { recordBotProPaymentFromWebhook } from './botBillingPaymentService.js';
+import {
+  processBotProPrepayChargeSuccess,
+  recordBotProPaymentFromWebhook,
+} from './botBillingPaymentService.js';
+import { parseBotTelegramId } from '../utils/botTelegramId.js';
 import { logger } from '../utils/logger.js';
 
 function asRecord(v: unknown): Record<string, unknown> | null {
@@ -61,12 +65,10 @@ function collectPlanCodes(d: Record<string, unknown>): string[] {
   return [...new Set(out)];
 }
 
-function tierFromPlanCodes(codes: string[]): 'api_pro' | 'bot_pro' | '' {
+function tierFromPlanCodes(codes: string[]): 'api_pro' | '' {
   const api = process.env.PAYSTACK_PLAN_API_PRO?.trim();
-  const bot = process.env.PAYSTACK_PLAN_BOT_PRO?.trim();
   for (const c of codes) {
     if (api && c === api) return 'api_pro';
-    if (bot && c === bot) return 'bot_pro';
   }
   return '';
 }
@@ -180,7 +182,6 @@ export async function processPaystackWebhookPayload(
   const dataKeys = Object.keys(d).sort();
 
   const envApiPlan = process.env.PAYSTACK_PLAN_API_PRO?.trim();
-  const envBotPlan = process.env.PAYSTACK_PLAN_BOT_PRO?.trim();
 
   let resolvedUserId = '';
   if (
@@ -211,7 +212,7 @@ export async function processPaystackWebhookPayload(
     tierFromMeta: metaTier || undefined,
     tierFromPlanCodes: tierFromPlan || undefined,
     planCodes,
-    expectedPlanCodes: { api: envApiPlan, bot: envBotPlan },
+    expectedApiPlan: envApiPlan,
     reference,
     subscriptionCode: resolvedSubCode || undefined,
     customerCode: customerCode || undefined,
@@ -246,7 +247,10 @@ export async function processPaystackWebhookPayload(
   };
 
   const maybeRecordBotProPayment = async () => {
-    if (effectiveTier !== 'bot_pro' || !metaTg) return;
+    if (effectiveTier !== 'bot_pro' || metaTier === 'bot_pro_prepay' || !metaTg)
+      return;
+    const recordTg = parseBotTelegramId(metaTg);
+    if (!recordTg) return;
     if (event === 'invoice.update' || event === 'invoice.create') {
       const paid =
         d.paid === true ||
@@ -258,7 +262,7 @@ export async function processPaystackWebhookPayload(
     }
     try {
       await recordBotProPaymentFromWebhook({
-        telegramId: metaTg,
+        telegramId: recordTg,
         event,
         d,
       });
@@ -300,12 +304,15 @@ export async function processPaystackWebhookPayload(
   };
 
   const activateBot = async () => {
-    const tg = metaTg;
+    const tg = parseBotTelegramId(metaTg);
     if (!tg) {
-      logger.warn('Paystack webhook: Bot Pro not activated (no telegramId)', {
-        event,
-        planCodes,
-      });
+      logger.warn(
+        'Paystack webhook: Bot Pro not activated (invalid telegramId)',
+        {
+          event,
+          planCodes,
+        },
+      );
       return;
     }
     await BotSubscriptionModel.findOneAndUpdate(
@@ -339,7 +346,6 @@ export async function processPaystackWebhookPayload(
           source,
           planCodes,
           expectedApiPlan: envApiPlan,
-          expectedBotPlan: envBotPlan,
         });
       }
       return;
@@ -398,6 +404,29 @@ export async function processPaystackWebhookPayload(
   }
 
   if (event === 'charge.success') {
+    if (metaTier === 'bot_pro_prepay' && metaTg) {
+      const prepayTg = parseBotTelegramId(metaTg);
+      if (!prepayTg) {
+        logger.warn('Paystack prepay: invalid telegramId in metadata', {
+          metaTg: metaTg.slice(0, 64),
+          reference,
+        });
+      } else {
+        try {
+          await processBotProPrepayChargeSuccess({
+            telegramId: prepayTg,
+            event,
+            d,
+          });
+        } catch (e) {
+          logger.error('Bot prepay webhook handler failed', {
+            message: String(e),
+            telegramId: prepayTg,
+            reference,
+          });
+        }
+      }
+    }
     await runActivations('charge.success');
     await maybeRecordApiProPayment();
     await maybeRecordBotProPayment();

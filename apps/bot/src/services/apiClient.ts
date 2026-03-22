@@ -131,12 +131,18 @@ export async function verifyNafdac(
 }
 
 type BotCheckoutJson =
-  | { ok: true; authorizationUrl: string }
+  | {
+      ok: true;
+      authorizationUrl: string;
+      monthlyKobo?: number;
+      maxMonths?: number;
+    }
   | { ok: false; code?: string; message?: string };
 
 export async function initializeBotProCheckout(
   baseUrl: string,
   telegramId: string,
+  months: number,
 ): Promise<
   { ok: true; authorizationUrl: string } | { ok: false; message: string }
 > {
@@ -144,7 +150,7 @@ export async function initializeBotProCheckout(
   try {
     const res = await axios.post<BotCheckoutJson>(
       `${root}/api/bot/billing/initialize-bot-pro`,
-      { telegramId },
+      { telegramId, months },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -176,6 +182,8 @@ export type BotStatusResponse =
       dailyLimit: number;
       periodEnd: string | null;
       totalVerifyCount: number;
+      prepayMonthlyKobo?: number;
+      prepayMaxMonths?: number;
     }
   | { ok: false; message?: string };
 
@@ -205,13 +213,7 @@ export async function fetchBotStatus(
       (data as { ok?: boolean }).ok === true &&
       'plan' in data
     ) {
-      const d = data as unknown as {
-        plan: string;
-        dailyUsed: unknown;
-        dailyLimit: unknown;
-        periodEnd: unknown;
-        totalVerifyCount: unknown;
-      };
+      const d = data as Record<string, unknown>;
       const plan = d.plan === 'pro_bot' ? 'pro_bot' : 'free';
       const dailyUsed =
         typeof d.dailyUsed === 'number' && Number.isFinite(d.dailyUsed)
@@ -232,6 +234,16 @@ export async function fetchBotStatus(
         Number.isFinite(d.totalVerifyCount)
           ? d.totalVerifyCount
           : 0;
+      const prepayMonthlyKobo =
+        typeof d.prepayMonthlyKobo === 'number' &&
+        Number.isFinite(d.prepayMonthlyKobo)
+          ? d.prepayMonthlyKobo
+          : undefined;
+      const prepayMaxMonths =
+        typeof d.prepayMaxMonths === 'number' &&
+        Number.isFinite(d.prepayMaxMonths)
+          ? d.prepayMaxMonths
+          : undefined;
       return {
         ok: true,
         plan,
@@ -239,6 +251,8 @@ export async function fetchBotStatus(
         dailyLimit,
         periodEnd,
         totalVerifyCount,
+        prepayMonthlyKobo,
+        prepayMaxMonths,
       };
     }
     const msg =
@@ -260,6 +274,7 @@ export type BotBillingTxRow = {
   createdAt: string | null;
   channel: string | null;
   description: string | null;
+  months?: number | null;
 };
 
 export type BotBillingTransactionsResponse =

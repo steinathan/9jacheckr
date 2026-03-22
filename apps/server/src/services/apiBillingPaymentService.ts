@@ -147,6 +147,7 @@ export type BillingPaymentRow = {
   createdAt: string | null;
   channel: string | null;
   description: string | null;
+  months: number | null;
 };
 
 export async function listUserApiBillingPayments(params: {
@@ -180,6 +181,7 @@ export async function listUserApiBillingPayments(params: {
     createdAt: r.createdAt ? r.createdAt.toISOString() : null,
     channel: r.channel,
     description: r.description,
+    months: null,
   }));
 
   return {

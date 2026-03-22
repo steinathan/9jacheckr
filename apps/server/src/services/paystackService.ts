@@ -1,5 +1,10 @@
 import crypto from 'node:crypto';
 import axios, { isAxiosError } from 'axios';
+import {
+  botProPrepayMaxMonths,
+  expectedBotPrepayTotalKobo,
+  isValidPrepayMonths,
+} from './botProPrepay.js';
 import { logger } from '../utils/logger.js';
 
 type PaystackEnvelope = {
@@ -108,30 +113,35 @@ export async function initializeApiProTransaction(params: {
   }
 }
 
-export async function initializeBotProTransaction(params: {
+export async function initializeBotProPrepayTransaction(params: {
   email: string;
   telegramId: string;
+  months: number;
   callbackUrl: string;
 }): Promise<InitializeResult> {
   const sk = secretKey();
-  const plan = process.env.PAYSTACK_PLAN_BOT_PRO?.trim();
   if (!sk) {
     return { ok: false, message: 'Billing is not configured.' };
   }
-  if (!plan) {
-    return { ok: false, message: 'Bot Pro plan is not configured.' };
+  if (!isValidPrepayMonths(params.months)) {
+    const max = botProPrepayMaxMonths();
+    return {
+      ok: false,
+      message: `Choose a whole number of months between 1 and ${max}.`,
+    };
   }
+  const amount = expectedBotPrepayTotalKobo(params.months);
   try {
     const res = await axios.post<PaystackEnvelope>(
       'https://api.paystack.co/transaction/initialize',
       {
         email: params.email,
-        amount: 100_000,
-        plan,
+        amount,
         callback_url: params.callbackUrl,
         metadata: {
           telegramId: params.telegramId,
-          tier: 'bot_pro',
+          tier: 'bot_pro_prepay',
+          months: params.months,
         },
       },
       {
@@ -146,7 +156,7 @@ export async function initializeBotProTransaction(params: {
     const { data } = res;
     if (res.status >= 400 || !data.status || !data.data?.authorization_url) {
       const { message, logPayload } = readPaystackFailure(res.status, data);
-      logger.warn('Paystack Bot Pro initialize rejected', logPayload);
+      logger.warn('Paystack Bot Pro prepay initialize rejected', logPayload);
       return { ok: false, message };
     }
     return {
@@ -160,10 +170,12 @@ export async function initializeBotProTransaction(params: {
         e.response.status,
         e.response.data,
       );
-      logger.warn('Paystack Bot Pro initialize failed', logPayload);
+      logger.warn('Paystack Bot Pro prepay initialize failed', logPayload);
       return { ok: false, message };
     }
-    logger.error('Paystack Bot Pro initialize failed', { message: String(e) });
+    logger.error('Paystack Bot Pro prepay initialize failed', {
+      message: String(e),
+    });
     return { ok: false, message: 'Could not start checkout.' };
   }
 }
