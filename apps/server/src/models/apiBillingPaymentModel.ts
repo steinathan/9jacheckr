@@ -3,7 +3,12 @@ import mongoose, { Schema } from 'mongoose';
 const apiBillingPaymentSchema = new Schema(
   {
     userId: { type: String, required: true, index: true },
-    paystackReference: { type: String, required: true, unique: true, trim: true },
+    paystackReference: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     amountKobo: { type: Number, required: true },
     currency: { type: String, default: 'NGN', trim: true },
     status: { type: String, default: 'success', trim: true },

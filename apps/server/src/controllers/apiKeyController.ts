@@ -8,7 +8,10 @@ import {
   rotateApiKeyById,
   updateApiKeyLabel,
 } from '../services/apiKeyService.js';
-import { resolveApiPlan } from '../services/apiPlanService.js';
+import {
+  resolveApiPlan,
+  type ResolvedApiPlan,
+} from '../services/apiPlanService.js';
 
 function serializeKey(
   doc: {
@@ -19,12 +22,15 @@ function serializeKey(
     createdAt?: Date;
   },
   isPrimary: boolean,
+  plan: ResolvedApiPlan,
 ) {
+  const apiAccessEnabled = plan === 'pro_api' || isPrimary;
   return {
     id: String(doc._id),
     keyPrefix: doc.keyPrefix,
     label: doc.label ?? '',
     isPrimary,
+    apiAccessEnabled,
     lastUsedAt: doc.lastUsedAt,
     createdAt: doc.createdAt ?? new Date(),
   };
@@ -32,19 +38,24 @@ function serializeKey(
 
 export async function getMyApiKey(req: Request, res: Response) {
   const userId = req.authUser!.id;
+  const plan = await resolveApiPlan(userId);
   const keys = await listActiveApiKeysForUser(userId);
   const primaryId = keys[0] ? String(keys[0]._id) : '';
   const first = keys[0];
   res.status(200).json({
     ok: true,
     apiKey: first
-      ? serializeKey(first, primaryId === String(first._id))
+      ? serializeKey(first, primaryId === String(first._id), plan)
       : null,
-    keys: keys.map((k) => serializeKey(k, primaryId === String(k._id))),
+    keys: keys.map((k) => serializeKey(k, primaryId === String(k._id), plan)),
   });
 }
 
-type CreateBody = { additional?: boolean; rotateKeyId?: string; label?: string };
+type CreateBody = {
+  additional?: boolean;
+  rotateKeyId?: string;
+  label?: string;
+};
 
 export async function createMyApiKey(req: Request, res: Response) {
   const userId = req.authUser!.id;
@@ -52,7 +63,21 @@ export async function createMyApiKey(req: Request, res: Response) {
 
   try {
     if (body.rotateKeyId?.trim()) {
-      const rotated = await rotateApiKeyById(userId, body.rotateKeyId.trim());
+      let rotated: Awaited<ReturnType<typeof rotateApiKeyById>>;
+      try {
+        rotated = await rotateApiKeyById(userId, body.rotateKeyId.trim());
+      } catch (e) {
+        if ((e as Error & { code?: string }).code === 'KEY_PLAN_DISABLED') {
+          res.status(403).json({
+            ok: false,
+            code: 'KEY_PLAN_DISABLED',
+            message:
+              'This key cannot be rotated on the Free plan. Use your primary key or upgrade to API Pro.',
+          });
+          return;
+        }
+        throw e;
+      }
       if (!rotated) {
         res.status(404).json({
           ok: false,
@@ -61,13 +86,18 @@ export async function createMyApiKey(req: Request, res: Response) {
         });
         return;
       }
+      const plan = await resolveApiPlan(userId);
       const keys = await listActiveApiKeysForUser(userId);
       const pid = keys[0] ? String(keys[0]._id) : '';
       res.status(200).json({
         ok: true,
         rawKey: rotated.rawKey,
-        apiKey: serializeKey(rotated.doc, pid === String(rotated.doc._id)),
-        keys: keys.map((k) => serializeKey(k, pid === String(k._id))),
+        apiKey: serializeKey(
+          rotated.doc,
+          pid === String(rotated.doc._id),
+          plan,
+        ),
+        keys: keys.map((k) => serializeKey(k, pid === String(k._id), plan)),
       });
       return;
     }
@@ -82,29 +112,27 @@ export async function createMyApiKey(req: Request, res: Response) {
         });
         return;
       }
-      const { doc, rawKey } = await createAdditionalApiKey(
-        userId,
-        body.label,
-      );
+      const { doc, rawKey } = await createAdditionalApiKey(userId, body.label);
       const keys = await listActiveApiKeysForUser(userId);
       const pid = keys[0] ? String(keys[0]._id) : '';
       res.status(200).json({
         ok: true,
         rawKey,
-        apiKey: serializeKey(doc, pid === String(doc._id)),
-        keys: keys.map((k) => serializeKey(k, pid === String(k._id))),
+        apiKey: serializeKey(doc, pid === String(doc._id), plan),
+        keys: keys.map((k) => serializeKey(k, pid === String(k._id), plan)),
       });
       return;
     }
 
     const { doc, rawKey } = await createOrRotatePrimaryApiKey(userId);
+    const plan = await resolveApiPlan(userId);
     const keys = await listActiveApiKeysForUser(userId);
     const pid = keys[0] ? String(keys[0]._id) : '';
     res.status(200).json({
       ok: true,
       rawKey,
-      apiKey: serializeKey(doc, pid === String(doc._id)),
-      keys: keys.map((k) => serializeKey(k, pid === String(k._id))),
+      apiKey: serializeKey(doc, pid === String(doc._id), plan),
+      keys: keys.map((k) => serializeKey(k, pid === String(k._id), plan)),
     });
   } catch (e) {
     const code = (e as Error & { code?: string }).code;
@@ -113,6 +141,15 @@ export async function createMyApiKey(req: Request, res: Response) {
         ok: false,
         code: 'KEY_LIMIT',
         message: 'Maximum number of API keys reached.',
+      });
+      return;
+    }
+    if (code === 'KEY_PLAN_DISABLED') {
+      res.status(403).json({
+        ok: false,
+        code: 'KEY_PLAN_DISABLED',
+        message:
+          'This key cannot be changed on the Free plan. Use your primary key or upgrade to API Pro.',
       });
       return;
     }
@@ -138,7 +175,21 @@ export async function revokeOneApiKey(req: Request, res: Response) {
     });
     return;
   }
-  const doc = await revokeApiKeyById(userId, keyId);
+  let doc: Awaited<ReturnType<typeof revokeApiKeyById>>;
+  try {
+    doc = await revokeApiKeyById(userId, keyId);
+  } catch (e) {
+    if ((e as Error & { code?: string }).code === 'KEY_PLAN_DISABLED') {
+      res.status(403).json({
+        ok: false,
+        code: 'KEY_PLAN_DISABLED',
+        message:
+          'This key cannot be revoked on the Free plan. Upgrade to API Pro to manage it, or use Revoke all.',
+      });
+      return;
+    }
+    throw e;
+  }
   if (!doc) {
     res.status(404).json({
       ok: false,
@@ -190,8 +241,8 @@ export async function patchApiKeyLabel(req: Request, res: Response) {
   res.status(200).json({
     ok: true,
     apiKey: first
-      ? serializeKey(first, primaryId === String(first._id))
+      ? serializeKey(first, primaryId === String(first._id), plan)
       : null,
-    keys: keys.map((k) => serializeKey(k, primaryId === String(k._id))),
+    keys: keys.map((k) => serializeKey(k, primaryId === String(k._id), plan)),
   });
 }

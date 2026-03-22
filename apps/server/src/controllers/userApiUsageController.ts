@@ -21,6 +21,9 @@ export async function getMyUsageMetrics(req: Request, res: Response) {
       lastVerifyAt: metrics.lastVerifyAt
         ? metrics.lastVerifyAt.toISOString()
         : null,
+      lastSearchAt: metrics.lastSearchAt
+        ? metrics.lastSearchAt.toISOString()
+        : null,
     },
   });
 }

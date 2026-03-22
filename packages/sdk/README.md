@@ -2,7 +2,7 @@
 
 ## @9jacheckr/sdk
 
-Official Node.js client for the [9ja Checkr](https://9jacheckr.xyz) NAFDAC verification API: single verify, batch verify (API Pro), and product search (API Pro).
+Official Node.js client for the [9ja Checkr](https://9jacheckr.xyz) NAFDAC verification API: single verify, batch verify (API Pro), and product search (API Pro). Monthly **API usage** quotas are enforced server-side: each verify row (incl. batch) and each successful search count toward the same cap (e.g. Free 300 / Pro 50,000 per UTC month — see product docs).
 
 ## Requirements
 
@@ -34,7 +34,7 @@ if (result.ok) {
 }
 ```
 
-**Batch verify (API Pro)** — up to 40 NAFDAC numbers per request; each row counts toward your monthly quota.
+**Batch verify (API Pro)** — up to 40 NAFDAC numbers per request; each row counts toward your monthly API usage quota.
 
 ```ts
 const batch = await client.verifyBatch(['01-5713', '04-8127']);
@@ -49,7 +49,7 @@ if (batch.ok) {
 }
 ```
 
-**Product search (API Pro)** — full-text search over indexed products.
+**Product search (API Pro)** — full-text search over indexed products. Each successful search counts toward the same monthly API usage quota as verifies.
 
 ```ts
 const search = await client.searchProducts('sardine', { limit: 10 });
@@ -139,30 +139,31 @@ Optional `nafdac` may appear on single-verify errors.
 
 #### From the API (examples)
 
-| HTTP | `code` | Notes |
-| ---- | ------ | ----- |
-| 400 | `INVALID_NAFDAC` | Single verify: bad path param |
-| 400 | `INVALID_BODY` | Batch: missing/empty `nafdac` array |
-| 400 | `INVALID_QUERY` | Search: `q` too short (SDK also validates) |
-| 401 | `MISSING_API_KEY` / `INVALID_API_KEY` | Key header |
-| 403 | `FEATURE_REQUIRES_PRO` | Batch or search on Free plan |
-| 404 | `NOT_FOUND` | Single verify |
-| 429 | `PLAN_QUOTA_EXCEEDED` | Monthly verify cap |
-| 429 | `RATE_LIMITED` | Per-plan rate limit |
-| 500 | `INTERNAL_ERROR` | Server error |
+| HTTP | `code`                                | Notes                                                           |
+| ---- | ------------------------------------- | --------------------------------------------------------------- |
+| 400  | `INVALID_NAFDAC`                      | Single verify: bad path param                                   |
+| 400  | `INVALID_BODY`                        | Batch: missing/empty `nafdac` array                             |
+| 400  | `INVALID_QUERY`                       | Search: `q` too short (SDK also validates)                      |
+| 401  | `MISSING_API_KEY` / `INVALID_API_KEY` | Key header                                                      |
+| 403  | `FEATURE_REQUIRES_PRO`                | Batch or search on Free plan                                    |
+| 403  | `KEY_PLAN_DISABLED`                   | Non-primary API key while on Free plan (use primary or upgrade) |
+| 404  | `NOT_FOUND`                           | Single verify                                                   |
+| 429  | `PLAN_QUOTA_EXCEEDED`                 | Monthly API usage cap (verifies + searches)                     |
+| 429  | `RATE_LIMITED`                        | Per-plan rate limit                                             |
+| 500  | `INTERNAL_ERROR`                      | Server error                                                    |
 
 `message` may change; prefer `code` for branching.
 
 #### From the SDK only
 
-| `code` | When |
-| ------ | ---- |
-| `INVALID_NAFDAC` | Empty single-verify input (not sent). |
-| `INVALID_BODY` | Empty batch list after trim (not sent). |
-| `INVALID_QUERY` | Search query &lt; 2 chars (not sent). |
-| `INVALID_RESPONSE` | Body is not JSON or unexpected shape. |
-| `TIMEOUT` | Request exceeded ~25s. |
-| `NETWORK_ERROR` | Network failure before a parsed body. |
+| `code`             | When                                    |
+| ------------------ | --------------------------------------- |
+| `INVALID_NAFDAC`   | Empty single-verify input (not sent).   |
+| `INVALID_BODY`     | Empty batch list after trim (not sent). |
+| `INVALID_QUERY`    | Search query &lt; 2 chars (not sent).   |
+| `INVALID_RESPONSE` | Body is not JSON or unexpected shape.   |
+| `TIMEOUT`          | Request exceeded ~25s.                  |
+| `NETWORK_ERROR`    | Network failure before a parsed body.   |
 
 ## Changelog
 

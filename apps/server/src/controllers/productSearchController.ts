@@ -1,6 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import { resolveApiPlan } from '../services/apiPlanService.js';
 import {
+  assertMonthlyApiQuotaAllows,
+  incrementMonthlyApiSearch,
+} from '../services/monthlyApiQuotaService.js';
+import { recordUserApiSearch } from '../services/userApiUsageService.js';
+import {
   runProductSearch,
   tokenizeSearchQuery,
 } from '../services/productSearchService.js';
@@ -50,12 +55,23 @@ export async function productSearchController(
     return;
   }
 
-  const limit = Math.min(
-    50,
-    Math.max(1, Number(req.query.limit) || 20),
-  );
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+
+  const quota = await assertMonthlyApiQuotaAllows(userId);
+  if (!quota.ok) {
+    res.status(429).json({
+      ok: false,
+      code: 'PLAN_QUOTA_EXCEEDED',
+      message: `Monthly API usage limit reached (${quota.limit}).`,
+    } as VerifyApiErrorBody);
+    return;
+  }
+
   try {
     const results = await runProductSearch(q, limit);
+
+    await recordUserApiSearch(userId).catch(() => {});
+    await incrementMonthlyApiSearch(userId).catch(() => {});
 
     res.status(200).json({
       ok: true,

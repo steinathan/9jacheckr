@@ -13,7 +13,11 @@ import { requireApiAccess } from './middleware/requireApiAccess.js';
 import { logger } from './utils/logger.js';
 import { httpLogger } from './middleware/httpLogger.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { apiRateLimiter } from './middleware/rateLimiter.js';
+import {
+  botRoutesRateLimiter,
+  dashboardKeysRateLimiter,
+  publicVerifyRateLimiter,
+} from './middleware/rateLimiter.js';
 import { billingWebhookController } from './controllers/billingWebhookController.js';
 
 const PORT = Number(process.env.PORT) || 4000;
@@ -45,7 +49,6 @@ async function main() {
   );
 
   app.use(express.json({ limit: '1mb' }));
-  app.use('/api', apiRateLimiter);
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ ok: true, service: '9ja-checkr-api' });
@@ -54,9 +57,9 @@ async function main() {
   app.use('/api', requireApiAccess);
   app.use('/api/verify', verifyNafdacRouter);
   app.use('/api/products', productSearchRouter);
-  app.use('/api/bot', botRouter);
-  app.use('/api/keys', apiKeyRouter);
-  app.use('/api/public', publicVerifyRouter);
+  app.use('/api/bot', botRoutesRateLimiter, botRouter);
+  app.use('/api/keys', dashboardKeysRateLimiter, apiKeyRouter);
+  app.use('/api/public', publicVerifyRateLimiter, publicVerifyRouter);
 
   app.use(errorHandler);
 

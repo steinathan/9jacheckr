@@ -32,7 +32,9 @@ async function fixProductTextIndexes(): Promise<void> {
 async function fixApiKeyIndexes(): Promise<void> {
   try {
     await ApiKeyModel.collection.dropIndex('userId_1');
-    logger.info('Dropped legacy unique index apikeys.userId_1 (multi-key support)');
+    logger.info(
+      'Dropped legacy unique index apikeys.userId_1 (multi-key support)',
+    );
   } catch (e) {
     const code = (e as { code?: number }).code;
     const msg = String(e);

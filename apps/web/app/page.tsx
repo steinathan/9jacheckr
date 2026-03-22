@@ -90,7 +90,10 @@ function TerminalPreview() {
 
       <div className="min-w-0 overflow-x-auto p-5 font-mono text-[13px] leading-relaxed">
         <div className="flex min-w-0 gap-2.5">
-          <span className="shrink-0" style={{ color: 'var(--terminal-prompt)' }}>
+          <span
+            className="shrink-0"
+            style={{ color: 'var(--terminal-prompt)' }}
+          >
             ›
           </span>
           <div className="min-w-0 wrap-break-word">
@@ -353,7 +356,7 @@ export default async function Home() {
               product registrations.
               <br />
               <span style={{ color: 'var(--text-2)' }}>Get JSON back.</span>
-          </h1>
+            </h1>
 
             <p
               className="anim anim-d2 mt-6 max-w-[440px] text-[16px] leading-[1.75]"
@@ -617,7 +620,11 @@ export default async function Home() {
               </code>{' '}
               header and require an active{' '}
               <span className="font-medium text-foreground">API Pro</span>{' '}
-              subscription. Free accounts receive{' '}
+              subscription. Product search reads from{' '}
+              <span className="font-medium text-foreground">
+                our indexed database
+              </span>{' '}
+              of registered products. Free accounts receive{' '}
               <code
                 className="font-mono text-[12px]"
                 style={{ color: 'var(--text-3)' }}
@@ -775,16 +782,16 @@ export default async function Home() {
                 style={{ color: 'var(--text-3)' }}
               >
                 Telegram bot
-          </a>
-          <a
+              </a>
+              <a
                 href={SUPPORT_PAYSTACK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block transition-colors hover:text-foreground"
                 style={{ color: 'var(--text-3)' }}
-          >
+              >
                 Support the project
-          </a>
+              </a>
             </div>
           </div>
         </div>

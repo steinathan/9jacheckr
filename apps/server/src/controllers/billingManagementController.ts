@@ -6,7 +6,7 @@ import {
 } from '../services/apiPlanService.js';
 import {
   currentUtcMonthKey,
-  getMonthlyVerifyCount,
+  getMonthlyUsageBreakdown,
 } from '../services/monthlyApiQuotaService.js';
 import { listUserApiBillingPayments } from '../services/apiBillingPaymentService.js';
 import {
@@ -20,7 +20,8 @@ export async function getBillingAccountController(req: Request, res: Response) {
   const userId = req.authUser!.id;
   const plan = await resolveApiPlan(userId);
   const periodKey = currentUtcMonthKey();
-  const monthlyUsed = await getMonthlyVerifyCount(userId, periodKey);
+  const usageBreakdown = await getMonthlyUsageBreakdown(userId, periodKey);
+  const monthlyUsed = usageBreakdown.verify + usageBreakdown.search;
   const monthlyLimit = monthlyVerifyLimitForPlan(plan);
 
   const doc = await ApiSubscriptionModel.findOne({ userId }).lean();
@@ -30,6 +31,8 @@ export async function getBillingAccountController(req: Request, res: Response) {
     plan,
     monthlyUsed,
     monthlyLimit,
+    monthlyVerifyUsed: usageBreakdown.verify,
+    monthlySearchUsed: usageBreakdown.search,
     hasCustomerProfile,
     subscription: null as null | {
       paystackStatus: string | null;
@@ -50,7 +53,9 @@ export async function getBillingAccountController(req: Request, res: Response) {
     return;
   }
 
-  const live = await fetchPaystackSubscriptionLive(doc.paystackSubscriptionCode);
+  const live = await fetchPaystackSubscriptionLive(
+    doc.paystackSubscriptionCode,
+  );
   if (!live.ok) {
     res.status(200).json({
       ok: true,
@@ -83,7 +88,9 @@ export async function getBillingAccountController(req: Request, res: Response) {
     if (link.ok) {
       updatePaymentMethodUrl = link.url;
     } else {
-      logger.warn('Paystack manage link unavailable', { message: link.message });
+      logger.warn('Paystack manage link unavailable', {
+        message: link.message,
+      });
     }
   }
 
@@ -151,7 +158,9 @@ export async function postCancelApiSubscriptionController(
     return;
   }
 
-  const live = await fetchPaystackSubscriptionLive(doc.paystackSubscriptionCode);
+  const live = await fetchPaystackSubscriptionLive(
+    doc.paystackSubscriptionCode,
+  );
   if (!live.ok) {
     res.status(503).json({
       ok: false,

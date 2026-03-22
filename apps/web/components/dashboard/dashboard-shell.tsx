@@ -12,7 +12,12 @@ import { cn } from '@/lib/utils';
 const NAV = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/keys', label: 'API Keys', icon: Key, exact: false },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings, exact: true },
+  {
+    href: '/dashboard/settings',
+    label: 'Settings',
+    icon: Settings,
+    exact: true,
+  },
 ] as const;
 
 export function DashboardShell({
@@ -39,7 +44,7 @@ export function DashboardShell({
 
   return (
     <div className="page-bg flex h-dvh min-h-0 overflow-hidden">
-      <aside className="sidebar hidden min-h-0 flex-col lg:flex">
+      <aside className="sidebar hidden min-h-0 min-w-0 flex-col lg:flex">
         <div
           className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3"
           style={{ borderColor: 'var(--border-subtle)' }}
@@ -56,7 +61,10 @@ export function DashboardShell({
           <ThemeToggle className="shrink-0" />
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-2" aria-label="Sidebar">
+        <nav
+          className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-2"
+          aria-label="Sidebar"
+        >
           <ul className="space-y-0.5">
             {NAV.map(({ href, label, icon: Icon, exact }) => {
               const active = isActive(href, exact);
@@ -86,7 +94,7 @@ export function DashboardShell({
           </ul>
 
           {apiBaseUrl ? (
-            <div className="mt-4 px-0.5">
+            <div className="mt-4 min-w-0 px-0.5">
               <ApiProUpgradeCta apiBaseUrl={apiBaseUrl} variant="sidebar" />
             </div>
           ) : null}
@@ -155,7 +163,7 @@ export function DashboardShell({
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header
-          className="flex h-14 shrink-0 items-center justify-between border-b px-4 backdrop-blur-md lg:hidden"
+          className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-3 py-2 backdrop-blur-md sm:px-4 lg:hidden"
           style={{
             borderColor: 'var(--border-subtle)',
             background: 'var(--header-surface)',
@@ -163,28 +171,30 @@ export function DashboardShell({
         >
           <Link
             href="/"
-            className="group flex items-center gap-2 text-[14px] font-semibold text-foreground"
+            className="group flex min-w-0 shrink items-center gap-2 text-[14px] font-semibold text-foreground"
           >
-            <span className="logo-badge flex h-6 w-6 items-center justify-center rounded-[5px] text-[12px] font-bold text-black">
+            <span className="logo-badge flex h-6 w-6 shrink-0 items-center justify-center rounded-[5px] text-[12px] font-bold text-black">
               9
             </span>
-            9ja Checkr
+            <span className="truncate">9ja Checkr</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-2 gap-y-1 sm:flex-none sm:flex-nowrap">
             {apiBaseUrl ? (
-              <>
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                 <DashboardProLabel apiBaseUrl={apiBaseUrl} />
                 <ApiProUpgradeCta apiBaseUrl={apiBaseUrl} variant="navbar" />
-              </>
+              </div>
             ) : null}
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="text-[13px] text-(--text-2) transition-colors hover:text-foreground"
-            >
-              Sign out
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="text-[13px] text-(--text-2) transition-colors hover:text-foreground"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </header>
 
@@ -209,10 +219,7 @@ export function DashboardShell({
                 )}
               >
                 <Icon
-                  className={cn(
-                    'h-3.5 w-3.5',
-                    active && 'text-(--accent)',
-                  )}
+                  className={cn('h-3.5 w-3.5', active && 'text-(--accent)')}
                   strokeWidth={active ? 2 : 1.75}
                 />
                 {label}

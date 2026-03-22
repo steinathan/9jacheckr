@@ -62,12 +62,15 @@ export async function verifyBatchController(
     return;
   }
 
-  const quota = await assertMonthlyApiQuotaAllowsAdditional(userId, list.length);
+  const quota = await assertMonthlyApiQuotaAllowsAdditional(
+    userId,
+    list.length,
+  );
   if (!quota.ok) {
     res.status(429).json({
       ok: false,
       code: 'PLAN_QUOTA_EXCEEDED',
-      message: `Not enough monthly quota for ${list.length} checks.`,
+      message: `Not enough monthly API usage quota for ${list.length} verify operations.`,
     } as VerifyApiErrorBody);
     return;
   }

@@ -1,33 +1,42 @@
 ---
-description: Express API — routes, middleware, Mongo models, billing, bot internals
+description: Express API — middleware order, routes, controllers, Paystack, bot plan logic
 globs: apps/server/**/*.ts
 alwaysApply: false
 ---
 
 # Server (`apps/server`)
 
-## Layout
+## Entry & order (`src/index.ts`)
 
-- **Entry:** `src/index.ts` — CORS (`WEB_APP_URL`), Better Auth `toNodeHandler`, `express.json`, global `/api` rate limiter, `requireApiAccess`, routers mounted under `/api/verify`, `/api/products`, `/api/bot`, `/api/keys`, `/api/public`.
-- **Billing webhook** registered **before** `express.json` with `express.raw` for Paystack signature verification.
+CORS → Better Auth `/api/auth/*` → **billing webhook** (`express.raw`) → `express.json` → `/api` rate limit → `requireApiAccess` → routers → `errorHandler`.
 
-## Middleware chain
+## Routers
 
-- `requireApiAccess` resolves **session**, **API key**, or **bot** context; downstream controllers read `req.authContext`, `req.botTelegram`, etc.
-- Plan/quota: `apiPlanService`, `monthlyApiQuotaService`, `verifyPlanRateLimiter`; bot: `botPlanService` (`resolveBotPlan`, daily quota, `getBotStatusSnapshot`, `incrementBotDailyVerify` counts all bot lookups per UTC day; quota enforcement remains free-only).
+- **`/api/verify`** — `GET /:nafdac`, `POST /batch` (+ `verifyPlanRateLimiter`).
+- **`/api/products`** — search (Pro).
+- **`/api/bot`** — `requireBotInternalToken` on each route: `POST /activity`, `POST /status`, `POST /billing/initialize-bot-pro`.
+- **`/api/keys`** — session auth per handler: keys CRUD, `GET /metrics`, billing `status|account|transactions`, `POST billing/initialize-pro`, `POST billing/cancel-subscription`.
+- **`/api/public`** — `GET /verify/:nafdac` + internal secret (Next BFF).
 
-## Key files
+## Core services (pointers)
 
-- Verify: `controllers/verifyNafdacController.ts`, `services/verifyService.ts`, `routes/verifyNafdacRouter.ts`
-- Bot: `routes/botRouter.ts` (`/activity`, `/status`, `/billing/initialize-bot-pro`) + `requireBotInternalToken`
-- Keys / dashboard API: `routes/apiKeyRouter.ts`, usage controllers
-- Types: `src/types/types.ts` (`VerifyApiSuccess`, `ProductPlain`, …)
+| Area | Files |
+|------|--------|
+| Verify + bot quota | `verifyNafdacController.ts`, `verifyBatchController.ts`, `botPlanService.ts` (`resolveBotPlan`, `getBotStatusSnapshot`, `assertBotDailyQuotaAllows`, `incrementBotDailyVerify`) |
+| NAFDAC scrape + cache | `verifyService.ts`, `nafdacRegistrationClient.ts`, `nafdacHtmlParser.ts` |
+| API plan / monthly quota | `apiPlanService.ts`, `monthlyApiQuotaService.ts` |
+| Paystack | `paystackService.ts`, `paystackWebhookService.ts`, `billing*Controller.ts`, `botBillingInitializeController.ts` |
+| Product search | `productSearchController.ts`, `productSearchService.ts` |
+| Keys | `apiKeyController.ts`, `apiKeyService.ts` |
 
-## Mongo
+## Bot billing initialize
 
-Mongoose models in `src/models/*`. Index note: legacy `apikeys.userId_1` dropped on connect for multi-key Pro — see server README if `syncIndexes` fails.
+`botBillingInitializeController.ts`: `WEB_APP_URL` → origin; `callback_url` → `/bot/billing/success?via=telegram`; synthetic email `bot-tg-{telegramId}@{PAYSTACK_BOT_CHECKOUT_EMAIL_DOMAIN || 9jacheckr.xyz}`.
 
 ## Conventions
 
-- TypeScript **ESM**; import paths use **`.js` extension** in source.
-- Use existing `logger` for operational logs; return JSON bodies with `ok`, `code`, `message` for API errors consistent with `types.ts`.
+- ESM + **`.js` imports** in TS source.
+- JSON errors: `ok`, `code`, `message` per `types/types.ts`.
+- Use **`logger`** for ops logs.
+
+See **`9jacheckr-overview.mdc`** for full handbook.

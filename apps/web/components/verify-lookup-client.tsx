@@ -36,6 +36,44 @@ function formatDateLabel(iso: string | null): string {
   }).format(d);
 }
 
+/** How long ago a past date was (expiry &lt; now). */
+function relativeTimePast(past: Date, now: Date): string {
+  const dayMs = 86_400_000;
+  const totalDays = Math.floor((now.getTime() - past.getTime()) / dayMs);
+  if (totalDays < 1) return 'less than a day ago';
+  if (totalDays === 1) return '1 day ago';
+  if (totalDays < 7) return `${totalDays} days ago`;
+
+  const weeks = Math.floor(totalDays / 7);
+  if (totalDays < 30) {
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+
+  let months =
+    (now.getFullYear() - past.getFullYear()) * 12 +
+    (now.getMonth() - past.getMonth());
+  if (now.getDate() < past.getDate()) months -= 1;
+  if (months < 1) {
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+  if (months < 12) {
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  }
+
+  const years = Math.floor(months / 12);
+  return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+
+function formatExpiryDetail(iso: string | null): string {
+  const label = formatDateLabel(iso);
+  if (!iso) return label;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return label;
+  const now = new Date();
+  if (d >= now) return label;
+  return `${label} · expired ${relativeTimePast(d, now)}`;
+}
+
 function expiryNotice(iso: string | null): {
   tone: 'expired' | 'soon' | null;
   text: string;
@@ -45,9 +83,10 @@ function expiryNotice(iso: string | null): {
   if (Number.isNaN(d.getTime())) return { tone: null, text: '' };
   const now = new Date();
   if (d < now) {
+    const when = relativeTimePast(d, now);
     return {
       tone: 'expired',
-      text: 'This registration’s expiry date has passed. Treat the record as historical and confirm on packaging.',
+      text: `This registration expired ${when} (${formatDateLabel(iso)}). Treat the record as historical and confirm on packaging.`,
     };
   }
   const days = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
@@ -306,7 +345,7 @@ export function VerifyLookupClient() {
               />
               <DetailCard
                 label="Expiry"
-                value={formatDateLabel(product.expiryDate)}
+                value={formatExpiryDetail(product.expiryDate)}
               />
             </div>
 

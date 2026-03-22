@@ -8,9 +8,7 @@ export const metadata: Metadata = {
     'Return to the 9ja Checkr Telegram bot after subscribing to Bot Pro.',
 };
 
-function pick(
-  v: string | string[] | undefined,
-): string | null {
+function pick(v: string | string[] | undefined): string | null {
   if (v == null) return null;
   const s = Array.isArray(v) ? v[0] : v;
   const t = typeof s === 'string' ? s.trim() : '';
@@ -49,8 +47,9 @@ export default async function BotBillingSuccessPage({
             <>
               If Paystack confirmed your subscription, Bot Pro should activate
               shortly. Open the bot and run{' '}
-              <code className="font-mono text-[14px]">/status</code> to
-              confirm your plan, total lookups, and today’s usage — limits refresh on the next check.
+              <code className="font-mono text-[14px]">/status</code> to confirm
+              your plan, total lookups, and today’s usage — limits refresh on
+              the next check.
             </>
           ) : (
             <>

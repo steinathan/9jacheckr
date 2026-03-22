@@ -1,5 +1,5 @@
 ---
-description: Telegram bot — Telegraf, API client, commands
+description: Telegram bot — Telegraf, apiClient, commands, server endpoints, copy guidelines
 globs: apps/bot/**/*.ts
 alwaysApply: false
 ---
@@ -8,22 +8,33 @@ alwaysApply: false
 
 ## Env
 
-`TELEGRAM_BOT_TOKEN`, `API_BASE_URL` (server origin), `BOT_INTERNAL_TOKEN` (must match server).
+`TELEGRAM_BOT_TOKEN`, `API_BASE_URL` (Express origin, no trailing slash), `BOT_INTERNAL_TOKEN` (must match server).
 
-## Architecture
+## Entry
 
-- **Entry:** `src/index.ts` — registers command modules, `bot.catch` logging.
-- **API:** `services/apiClient.ts` — `verifyNafdac`, `recordBotActivity`, `initializeBotProCheckout`, `fetchBotStatus`; headers `x-internal-bot-token`, Telegram user fields (URI-encoded for header safety).
-- **Commands:** `commands/verifyCommand.ts` (`/verify`, inline flow, `/upgrade`), `commands/statusCommand.ts` (`/status`).
-- **UX:** `verifyButtonMarkup` for consistent keyboards; HTML replies where escaped content is controlled.
+`src/index.ts` — `registerVerifyCommand`, `registerStatusCommand`, `/start` (help text lists `/verify`, `/status`, `/upgrade`).
 
-## Server endpoints used
+## API client (`services/apiClient.ts`)
 
-- `POST /api/bot/activity`
-- `POST /api/bot/status` — `{ telegramId }`
-- `POST /api/bot/billing/initialize-bot-pro` — `{ telegramId }`
-- `GET /api/verify/:nafdac` with bot headers
+- Headers: `x-internal-bot-token`, `x-telegram-user-id`, optional URI-encoded name headers.
+- **`verifyNafdac`**, **`recordBotActivity`**, **`initializeBotProCheckout`**, **`fetchBotStatus`** (`POST /api/bot/status`).
+
+## Commands
+
+| Command | Module | Behavior |
+|---------|--------|----------|
+| `/start` | `index.ts` | Help + optional activity POST |
+| `/verify` | `verifyCommand.ts` | Arg or pending text → `GET /api/verify/:nafdac` |
+| `/upgrade` | `verifyCommand.ts` | `initializeBotProCheckout` → Paystack link |
+| `/status` | `statusCommand.ts` | Plan, total + today usage, Pro period end |
+
+## Copy
+
+- Distinguish **“without Bot Pro”** vs **Bot Pro** — avoid lines that sound like everyone is on a single “free tier” when Pro users might read them.
+- Daily limit replies and `/start` footer: point to **`/upgrade`** and **`/status`** for plan/usage.
 
 ## Conventions
 
-- ESM with **`.js` imports** in source; keep messages clear for **free vs Bot Pro** (avoid implying Pro users are on “free tier”).
+ESM + **`.js` imports** in source; HTML replies only where content is controlled/escaped.
+
+See **`9jacheckr-overview.mdc`** for full handbook.

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { findApiKeyByRaw } from '../services/apiKeyService.js';
+import { authenticateApiKeyForProductApi } from '../services/apiKeyService.js';
 
 /** Bot sends UTF-8 names as encodeURIComponent (Node rejects non-ASCII in headers). */
 function telegramHeaderDecoded(raw: string | undefined): string | undefined {
@@ -56,8 +56,17 @@ export async function requireApiAccess(
     return;
   }
 
-  const key = await findApiKeyByRaw(rawApiKey);
-  if (!key || key.revokedAt) {
+  const auth = await authenticateApiKeyForProductApi(rawApiKey);
+  if (!auth.ok) {
+    if (auth.reason === 'plan_blocked') {
+      res.status(403).json({
+        ok: false,
+        code: 'KEY_PLAN_DISABLED',
+        message:
+          'This API key is disabled on the Free plan. Use your primary key or upgrade to API Pro.',
+      });
+      return;
+    }
     res.status(401).json({
       ok: false,
       code: 'INVALID_API_KEY',
@@ -66,6 +75,7 @@ export async function requireApiAccess(
     return;
   }
 
+  const key = auth.key;
   key.lastUsedAt = new Date();
   await key.save();
 

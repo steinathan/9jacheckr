@@ -1,5 +1,5 @@
 ---
-description: Next.js app — App Router, dashboard, verify BFF, styling tokens
+description: Next.js 16 — App Router, dashboard, verify BFF, bot billing success, design tokens
 globs: apps/web/**/*.{tsx,ts}
 alwaysApply: false
 ---
@@ -8,21 +8,29 @@ alwaysApply: false
 
 ## Stack
 
-- **Next.js 16** (Turbopack in dev), **React 19**, Tailwind 4, `better-auth` client for session.
-- **App Router** under `app/` — e.g. `/`, `/verify`, `/login`, `/dashboard/*`, `/bot/billing/success`.
+Next.js 16 (Turbopack dev), React 19, Tailwind 4, Better Auth client, TanStack Query where used.
 
-## Env (see `apps/web/README.md`)
+## App routes (`app/`)
+
+- `/`, `/verify`, `/login`
+- `/dashboard`, `/dashboard/keys`, `/dashboard/settings` (billing + account)
+- `/bot/billing/success` — Paystack redirect; query: `via=telegram`, Paystack adds `reference` / `trxref`
+
+## Env (detail in `apps/web/README.md`)
 
 - `NEXT_PUBLIC_API_BASE_URL` — browser + server API origin (no trailing slash).
-- **`WEB_VERIFY_INTERNAL_SECRET`** — server-only; never `NEXT_PUBLIC_*`. Must match API server.
-- `WEB_APP_URL` — canonical site URL in production (verify-lookup origin checks).
-- Optional `API_BASE_URL` for server-side routes calling the API.
+- **`WEB_VERIFY_INTERNAL_SECRET`** — server-only; must match API; **never** `NEXT_PUBLIC_*`.
+- `WEB_APP_URL` — canonical site URL.
+- Optional `API_BASE_URL` for server components/route handlers calling the API.
 
-## UI
+## UI patterns
 
-- Reuse **`SiteNav`**, existing spacing/typography, and design tokens (CSS variables + Tailwind arbitrary props like `border-(--border)`, `text-(--text-2)`).
-- Dashboard shell, API key UI, settings/billing live under `components/dashboard/`.
+- **`SiteNav`** on marketing-style pages.
+- Design tokens: CSS variables + Tailwind e.g. `border-(--border)`, `text-(--text-2)`, `hover:bg-(--bg-subtle)`.
+- Dashboard: `components/dashboard/*` — shell, API keys, settings/billing, Pro CTAs, docs snippets.
 
-## Patterns
+## Security
 
-- Public verify flow may use client components + server actions or route handlers; **`/api/verify-lookup`** proxies to backend with the internal secret — do not expose that secret to the client.
+- **`POST /api/verify-lookup`** (or equivalent BFF): runs **only on server**; forwards to API with internal secret. Do not expose that secret to client bundles.
+
+See **`9jacheckr-overview.mdc`** for full handbook.

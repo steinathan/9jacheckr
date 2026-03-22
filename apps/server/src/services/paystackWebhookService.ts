@@ -26,9 +26,11 @@ function normalizeMetaObject(raw: unknown): Record<string, unknown> {
   return asRecord(raw) ?? {};
 }
 
-function readMeta(
-  d: Record<string, unknown>,
-): { userId: string; telegramId: string; tier: string } {
+function readMeta(d: Record<string, unknown>): {
+  userId: string;
+  telegramId: string;
+  tier: string;
+} {
   const meta = normalizeMetaObject(d.metadata);
   const cust = asRecord(d.customer) ?? {};
   const custMeta = normalizeMetaObject(cust.metadata);
@@ -74,14 +76,18 @@ function customerEmailFromData(d: Record<string, unknown>): string {
   return typeof e === 'string' ? e.trim() : '';
 }
 
-async function findBetterAuthUserIdByEmail(email: string): Promise<string | null> {
+async function findBetterAuthUserIdByEmail(
+  email: string,
+): Promise<string | null> {
   const db = mongoose.connection.db;
   if (!db || !email.trim()) return null;
   const safe = email.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const doc = await db.collection('user').findOne(
-    { email: new RegExp(`^${safe}$`, 'i') },
-    { projection: { id: 1, _id: 1 } },
-  );
+  const doc = await db
+    .collection('user')
+    .findOne(
+      { email: new RegExp(`^${safe}$`, 'i') },
+      { projection: { id: 1, _id: 1 } },
+    );
   if (!doc) return null;
   const row = doc as { id?: string; _id?: unknown };
   if (typeof row.id === 'string' && row.id) return row.id;
@@ -132,7 +138,10 @@ function webhookDataRoot(payload: unknown): Record<string, unknown> | null {
 export async function processPaystackWebhookPayload(
   payload: unknown,
 ): Promise<void> {
-  const p = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+  const p =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)
+      : null;
   const event = String(p?.event ?? '');
 
   const d = webhookDataRoot(payload);
@@ -141,13 +150,15 @@ export async function processPaystackWebhookPayload(
     return;
   }
 
-  const { userId: metaUserId, telegramId: metaTg, tier: metaTier } = readMeta(d);
+  const {
+    userId: metaUserId,
+    telegramId: metaTg,
+    tier: metaTier,
+  } = readMeta(d);
   const planCodes = collectPlanCodes(d);
   const tierFromPlan = tierFromPlanCodes(planCodes);
   const effectiveTier =
-    metaTier === 'api_pro' || metaTier === 'bot_pro'
-      ? metaTier
-      : tierFromPlan;
+    metaTier === 'api_pro' || metaTier === 'bot_pro' ? metaTier : tierFromPlan;
 
   const cust = asRecord(d.customer) ?? {};
   const subscriptionCode =
@@ -259,7 +270,10 @@ export async function processPaystackWebhookPayload(
       },
       { upsert: true },
     );
-    logger.info('Paystack activated API Pro', { userId: resolvedUserId, event });
+    logger.info('Paystack activated API Pro', {
+      userId: resolvedUserId,
+      event,
+    });
   };
 
   const activateBot = async () => {
@@ -350,10 +364,13 @@ export async function processPaystackWebhookPayload(
         botModified: botRes.modifiedCount,
       });
     } else {
-      logger.warn('Paystack webhook: subscription.disable without subscription_code', {
-        event,
-        dataKeys,
-      });
+      logger.warn(
+        'Paystack webhook: subscription.disable without subscription_code',
+        {
+          event,
+          dataKeys,
+        },
+      );
     }
   }
 

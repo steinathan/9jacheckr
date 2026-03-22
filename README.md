@@ -74,6 +74,8 @@ Replace `{nafdac}` with the number from the product label (e.g. `01-5713`). If t
 
 You do **not** need cookies or a session for verify — the key is enough.
 
+**Monthly API usage quota:** Counts **verify** outcomes (each successful lookup and each not-found, including every row in batch) **plus** each successful **product search** request (`GET /api/products/search`). **Free:** 300 per UTC calendar month (verifies only; search requires Pro). **API Pro:** 50,000 combined units per month (subscription billed separately, e.g. ₦10,000/mo via Paystack). Exceeding the cap returns **429** `PLAN_QUOTA_EXCEEDED`.
+
 **Website lookup (not for third-party apps):** The `/verify` page calls **your own** Next.js route `POST /api/verify-lookup` (same origin, no secret in the browser). That server route forwards to the API with an internal header. **`GET /api/public/verify/{nafdac}`** on the API requires a shared server secret (`WEB_VERIFY_INTERNAL_SECRET`); it is **not** documented for integrators and is not usable from browsers without that secret. Use **`GET /api/verify/{nafdac}` + `x-api-key`** for integrations.
 
 ### 4. Success response (`200`)
@@ -105,28 +107,34 @@ When the number is found on the register, the body looks like:
 
 Check **`ok: false`** and branch on **`code`** (and HTTP status) in your integration.
 
-| HTTP    | `code`            | What to do                                                                                                                     |
-| ------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **401** | `MISSING_API_KEY` | Send the `x-api-key` header.                                                                                                   |
-| **401** | `INVALID_API_KEY` | Key wrong, revoked, or typo — fix the key or create a new one in the dashboard.                                                |
-| **400** | `INVALID_NAFDAC`  | Bad or empty number in the URL — validate input before calling.                                                                |
-| **404** | `NOT_FOUND`       | Valid request, but **no product** for that number (not on the register from NAFDAC’s side). Show a clear message to your user. |
-| **429** | `RATE_LIMITED`    | Too many requests — **wait and retry** with backoff; don’t hammer the API.                                                     |
-| **500** | `INTERNAL_ERROR`  | Something failed on our side — **retry later**; if it persists, contact us.                                                    |
+| HTTP    | `code`              | What to do                                                                                                                     |
+| ------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **401** | `MISSING_API_KEY`   | Send the `x-api-key` header.                                                                                                   |
+| **401** | `INVALID_API_KEY`   | Key wrong, revoked, or typo — fix the key or create a new one in the dashboard.                                                |
+| **403** | `KEY_PLAN_DISABLED` | On the **Free** plan, only your **primary** (oldest) key works. Use that key or upgrade to API Pro.                            |
+| **400** | `INVALID_NAFDAC`    | Bad or empty number in the URL — validate input before calling.                                                                |
+| **404** | `NOT_FOUND`         | Valid request, but **no product** for that number (not on the register from NAFDAC’s side). Show a clear message to your user. |
+| **429** | `RATE_LIMITED`      | Too many requests — **wait and retry** with backoff; don’t hammer the API.                                                     |
+| **500** | `INTERNAL_ERROR`    | Something failed on our side — **retry later**; if it persists, contact us.                                                    |
 
 ### 6. Rate limits
 
-Verify (and other routes under `/api`) share one limiter:
+Limits are **separate** for the dashboard vs product API:
 
-|                |                       |
-| -------------- | --------------------- |
-| **Limit**      | **60** requests       |
-| **Window**     | **15 minutes**        |
-| **Counted by** | **Client IP** address |
+**Dashboard** (`/api/keys/*` — session cookies, keys, metrics, billing): high cap per client IP (see [`rateLimiter.ts`](apps/server/src/middleware/rateLimiter.ts) `dashboardKeysRateLimiter`).
 
-When you exceed this, the API responds with **429** and `code: RATE_LIMITED`. The response may include standard **`RateLimit-*`** headers (remaining quota and reset hint) — you can use those to back off before retrying.
+**Product API** (`GET /api/verify/:nafdac`, `POST /api/verify/batch`, `GET /api/products/search` with `x-api-key` or bot token): **plan-based** per account (and bot user id where applicable), **15-minute** window — see [`verifyPlanRateLimiter.ts`](apps/server/src/middleware/verifyPlanRateLimiter.ts):
 
-If you **self-host** the API, these numbers come from [`apps/server/src/middleware/rateLimiter.ts`](apps/server/src/middleware/rateLimiter.ts) and can differ from production.
+| Plan (API key) | Max requests / 15 min (verify + batch + search combined) |
+| -------------- | -------------------------------------------------------- |
+| **Free**       | **45**                                                   |
+| **API Pro**    | **220**                                                  |
+
+**Other mounts:** `/api/bot/*` and `/api/public/*` have their own IP-based caps in `rateLimiter.ts`.
+
+When you exceed a limit, the API responds with **429** and `code: RATE_LIMITED`. Responses may include **`RateLimit-*`** headers — use them to back off before retrying.
+
+If you **self-host**, tune numbers in `rateLimiter.ts` and `verifyPlanRateLimiter.ts`.
 
 ### 7. Example
 

@@ -65,7 +65,7 @@ export async function verifyNafdacController(
         const body: VerifyApiErrorBody = {
           ok: false,
           code: 'PLAN_QUOTA_EXCEEDED',
-          message: `Monthly verify limit reached (${quota.limit}). Upgrade to API Pro for a higher quota.`,
+          message: `Monthly API usage limit reached (${quota.limit}). Upgrade to API Pro for a higher quota.`,
         };
         res.status(429).json(body);
         return;

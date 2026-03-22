@@ -46,7 +46,9 @@ export async function getBotStatusSnapshot(
   return { plan, dailyUsed, dailyLimit, periodEnd, totalVerifyCount };
 }
 
-export async function resolveBotPlan(telegramId: string): Promise<ResolvedBotPlan> {
+export async function resolveBotPlan(
+  telegramId: string,
+): Promise<ResolvedBotPlan> {
   const doc = await BotSubscriptionModel.findOne({ telegramId }).lean();
   if (!doc) return 'free';
   if (doc.plan !== 'pro_bot' || doc.status !== 'active') return 'free';
@@ -83,7 +85,9 @@ export async function assertBotDailyQuotaAllows(
 }
 
 /** Counts every completed bot lookup per UTC day (for /status). Quota still enforced only for free tier. */
-export async function incrementBotDailyVerify(telegramId: string): Promise<void> {
+export async function incrementBotDailyVerify(
+  telegramId: string,
+): Promise<void> {
   const dateKey = currentUtcDayKey();
   await BotDailyUsageModel.findOneAndUpdate(
     { telegramId, dateKey },

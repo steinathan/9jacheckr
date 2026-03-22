@@ -25,6 +25,19 @@ export async function recordUserApiVerify(
   );
 }
 
+export async function recordUserApiSearch(userId: string) {
+  const now = new Date();
+  await UserApiUsageModel.findOneAndUpdate(
+    { userId },
+    {
+      $inc: { searchCount: 1 },
+      $set: { lastSearchAt: now },
+      $setOnInsert: { userId },
+    },
+    { upsert: true, new: true },
+  );
+}
+
 export async function getUsageForUser(userId: string) {
   const doc = await UserApiUsageModel.findOne({ userId }).lean();
   if (!doc) {
@@ -34,6 +47,8 @@ export async function getUsageForUser(userId: string) {
       notFoundCount: 0,
       errorCount: 0,
       lastVerifyAt: null as Date | null,
+      searchCount: 0,
+      lastSearchAt: null as Date | null,
     };
   }
   return {
@@ -42,5 +57,7 @@ export async function getUsageForUser(userId: string) {
     notFoundCount: doc.notFoundCount ?? 0,
     errorCount: doc.errorCount ?? 0,
     lastVerifyAt: doc.lastVerifyAt ?? null,
+    searchCount: doc.searchCount ?? 0,
+    lastSearchAt: doc.lastSearchAt ?? null,
   };
 }

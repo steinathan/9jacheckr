@@ -9,6 +9,7 @@ const limitBody = {
   message: 'Too many requests. Please wait a moment and try again.',
 };
 
+/** Shared window for product API: single verify, batch, product search (per plan). */
 const verifyFreeWindow = 15 * 60 * 1000;
 const verifyFreeMax = 45;
 const verifyProMax = 220;

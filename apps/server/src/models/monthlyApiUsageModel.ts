@@ -5,6 +5,8 @@ const monthlyApiUsageSchema = new Schema(
     userId: { type: String, required: true, index: true },
     periodKey: { type: String, required: true },
     verifyCount: { type: Number, default: 0 },
+    /** Successful product search requests this UTC month (counts toward same cap as verifies). */
+    searchCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

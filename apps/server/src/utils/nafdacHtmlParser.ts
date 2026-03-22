@@ -29,19 +29,26 @@ export function parseNafdacVerifyModalHtml(
   const modal = $('#modalCenter');
   if (!modal.length) return null;
 
-  if (modal.find('.alert-danger').length) return null;
-  if (!modal.find('.alert-success').length) return null;
-
   const body = modal.find('.modal-body');
   if (!body.length) return null;
+
+  const hasDanger = modal.find('.alert-danger').length > 0;
+  const hasSuccess = modal.find('.alert-success').length > 0;
+  // Active registration: green banner. Expired: red banner — same table layout either way.
+  if (!hasDanger && !hasSuccess) return null;
 
   const out: ExternalNafdacPayload = {};
   let ingredientLine: string | undefined;
 
-  const alertText = modal.find('.alert-success').first().text().trim();
-  const alertName = alertText
-    .match(/Success,\s*Product found,\s*(.+)/i)?.[1]
-    ?.trim();
+  const successAlertName = hasSuccess
+    ? modal
+        .find('.alert-success')
+        .first()
+        .text()
+        .trim()
+        .match(/Success,\s*Product found,\s*(.+)/i)?.[1]
+        ?.trim()
+    : undefined;
 
   body.find('table tr td span').each((_, el) => {
     const text = $(el).text().trim();
@@ -63,7 +70,7 @@ export function parseNafdacVerifyModalHtml(
     (out as Record<string, string | undefined>)[key] = value;
   });
 
-  if (!out.name && alertName) out.name = alertName;
+  if (!out.name && successAlertName) out.name = successAlertName;
 
   if (!out.name && !out.nafdac) return null;
 
@@ -71,6 +78,7 @@ export function parseNafdacVerifyModalHtml(
     out.ingredients = splitIngredients(ingredientLine);
   }
 
-  out.approved = true;
+  // Expired certification modal: danger alert only; product rows still list full details.
+  out.approved = hasSuccess && !hasDanger;
   return out;
 }

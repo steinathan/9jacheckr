@@ -30,7 +30,10 @@ function secretKey(): string {
   return process.env.PAYSTACK_SECRET_KEY?.trim() ?? '';
 }
 
-export function verifyPaystackSignature(rawBody: Buffer, signature: string): boolean {
+export function verifyPaystackSignature(
+  rawBody: Buffer,
+  signature: string,
+): boolean {
   const sk = secretKey();
   if (!sk || !signature) return false;
   const hash = crypto.createHmac('sha512', sk).update(rawBody).digest('hex');
@@ -202,13 +205,14 @@ export async function fetchPaystackSubscriptionLive(
     return { ok: false, message: 'Missing subscription.' };
   }
   try {
-    const res = await axios.get<
-      PaystackDataEnvelope<Record<string, unknown>>
-    >(`https://api.paystack.co/subscription/${encodeURIComponent(code)}`, {
-      headers: { ...auth },
-      timeout: 15_000,
-      validateStatus: (s) => s >= 200 && s < 500,
-    });
+    const res = await axios.get<PaystackDataEnvelope<Record<string, unknown>>>(
+      `https://api.paystack.co/subscription/${encodeURIComponent(code)}`,
+      {
+        headers: { ...auth },
+        timeout: 15_000,
+        validateStatus: (s) => s >= 200 && s < 500,
+      },
+    );
     const { data } = res;
     if (res.status >= 400 || !data.status || !data.data) {
       const { message } = readPaystackFailure(res.status, data);
@@ -217,9 +221,10 @@ export async function fetchPaystackSubscriptionLive(
     const d = data.data;
     const emailToken =
       typeof d.email_token === 'string' ? d.email_token.trim() : '';
-    const plan = d.plan && typeof d.plan === 'object' && !Array.isArray(d.plan)
-      ? (d.plan as Record<string, unknown>)
-      : null;
+    const plan =
+      d.plan && typeof d.plan === 'object' && !Array.isArray(d.plan)
+        ? (d.plan as Record<string, unknown>)
+        : null;
     const planName =
       plan && typeof plan.name === 'string' ? plan.name.trim() : null;
     const planInterval =
@@ -253,7 +258,10 @@ export async function fetchPaystackSubscriptionLive(
     };
   } catch (e) {
     if (isAxiosError(e) && e.response) {
-      const { message } = readPaystackFailure(e.response.status, e.response.data);
+      const { message } = readPaystackFailure(
+        e.response.status,
+        e.response.data,
+      );
       return { ok: false, message };
     }
     logger.error('Paystack fetch subscription failed', { message: String(e) });
@@ -292,10 +300,15 @@ export async function disablePaystackSubscription(params: {
     return { ok: true };
   } catch (e) {
     if (isAxiosError(e) && e.response) {
-      const { message } = readPaystackFailure(e.response.status, e.response.data);
+      const { message } = readPaystackFailure(
+        e.response.status,
+        e.response.data,
+      );
       return { ok: false, message };
     }
-    logger.error('Paystack disable subscription failed', { message: String(e) });
+    logger.error('Paystack disable subscription failed', {
+      message: String(e),
+    });
     return { ok: false, message: 'Could not cancel subscription.' };
   }
 }
@@ -312,9 +325,7 @@ export async function fetchPaystackSubscriptionManageLink(
     return { ok: false, message: 'Missing subscription.' };
   }
   try {
-    const res = await axios.get<
-      PaystackDataEnvelope<{ link?: string }>
-    >(
+    const res = await axios.get<PaystackDataEnvelope<{ link?: string }>>(
       `https://api.paystack.co/subscription/${encodeURIComponent(code)}/manage/link`,
       {
         headers: { ...auth },
@@ -330,7 +341,10 @@ export async function fetchPaystackSubscriptionManageLink(
     return { ok: true, url: data.data.link };
   } catch (e) {
     if (isAxiosError(e) && e.response) {
-      const { message } = readPaystackFailure(e.response.status, e.response.data);
+      const { message } = readPaystackFailure(
+        e.response.status,
+        e.response.data,
+      );
       return { ok: false, message };
     }
     logger.error('Paystack manage link failed', { message: String(e) });

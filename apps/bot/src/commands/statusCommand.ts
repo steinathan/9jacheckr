@@ -59,9 +59,9 @@ export function registerStatusCommand(bot: Telegraf, apiBaseUrl: string) {
       extra.push('Use /upgrade for Bot Pro (no daily cap).');
     }
 
-    await ctx.reply(
-      [planLine, '', ...usageLines, '', ...extra].join('\n'),
-      { parse_mode: 'HTML', reply_markup: verifyButtonMarkup },
-    );
+    await ctx.reply([planLine, '', ...usageLines, '', ...extra].join('\n'), {
+      parse_mode: 'HTML',
+      reply_markup: verifyButtonMarkup,
+    });
   });
 }

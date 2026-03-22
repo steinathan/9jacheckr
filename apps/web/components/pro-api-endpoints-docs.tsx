@@ -2,7 +2,11 @@
 
 import { CopyFieldButton } from '@/components/dashboard/copy-field-button';
 
-function endpointRow(method: string, path: string, methodStyle: 'get' | 'post') {
+function endpointRow(
+  method: string,
+  path: string,
+  methodStyle: 'get' | 'post',
+) {
   const isGet = methodStyle === 'get';
   return (
     <div
@@ -95,8 +99,8 @@ export function ProApiEndpointsDocs({ apiBaseUrl }: Props) {
           style={{ color: 'var(--text-2)' }}
         >
           Verify up to 40 NAFDAC numbers in one request. Each successful or
-          not-found result counts toward your monthly quota, same as single
-          lookups.
+          not-found result counts toward your monthly API usage (same pool as
+          single verify and product search).
         </p>
         {endpointRow('POST', '/api/verify/batch', 'post')}
         <div className="code-surface mt-4">
@@ -147,9 +151,16 @@ export function ProApiEndpointsDocs({ apiBaseUrl }: Props) {
           className="mt-1 text-[13px] leading-relaxed"
           style={{ color: 'var(--text-2)' }}
         >
-          Searches NAFDAC, name, category, source, manufacturer, and each
-          ingredient. Several words mean every word must match somewhere
-          (order does not matter). Results are ranked by relevance. Query{' '}
+          Results come from{' '}
+          <span className="font-medium text-foreground">
+            our indexed product database
+          </span>{' '}
+          (built from NAFDAC registrations)—not a live scrape per request.
+          Matching covers NAFDAC number, name, category, source, manufacturer,
+          and each ingredient. Several words mean every word must match
+          somewhere (order does not matter). Results are ranked by relevance.
+          Each successful response counts one unit toward the same monthly API
+          usage cap as verifies. Query{' '}
           <code className="font-mono text-[12px] text-(--text-3)">q</code> must
           be at least 2 characters. Optional{' '}
           <code className="font-mono text-[12px] text-(--text-3)">limit</code>{' '}

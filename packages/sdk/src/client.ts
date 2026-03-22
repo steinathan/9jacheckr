@@ -220,7 +220,7 @@ export class CheckrClient {
   }
 
   /**
-   * Verify up to 40 NAFDAC numbers in one request (API Pro). Each result counts toward monthly quota.
+   * Verify up to 40 NAFDAC numbers in one request (API Pro). Each result counts toward monthly API usage (shared with search).
    */
   async verifyBatch(nafdac: string[]): Promise<BatchVerifyResult> {
     const list = (Array.isArray(nafdac) ? nafdac : [])
@@ -246,6 +246,7 @@ export class CheckrClient {
 
   /**
    * Full-text product search (API Pro). `query` must be at least 2 characters.
+   * Each successful response counts one unit toward monthly API usage (shared with verify).
    */
   async searchProducts(
     query: string,

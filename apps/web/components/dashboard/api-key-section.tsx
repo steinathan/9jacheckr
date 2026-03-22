@@ -23,6 +23,8 @@ type ApiKeyRow = {
   keyPrefix: string;
   label: string;
   isPrimary?: boolean;
+  /** False on Free plan for non-primary keys (API returns 403 until Pro). */
+  apiAccessEnabled?: boolean;
   lastUsedAt: string | null;
   createdAt: string;
 };
@@ -48,6 +50,8 @@ type UsageMetrics = {
   notFoundCount: number;
   errorCount: number;
   lastVerifyAt: string | null;
+  searchCount: number;
+  lastSearchAt: string | null;
 };
 
 type MetricsJson = { ok: boolean; metrics?: UsageMetrics; code?: string };
@@ -242,10 +246,13 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const revokeOneMutation = useMutation({
     mutationFn: async (keyId: string) => {
-      const res = await fetch(`${base}/api/keys/key/${encodeURIComponent(keyId)}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${base}/api/keys/key/${encodeURIComponent(keyId)}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        },
+      );
       const data = (await res.json()) as { ok?: boolean; message?: string };
       if (!res.ok || !data.ok) {
         throw new Error(data.message ?? 'Could not revoke key.');
@@ -272,6 +279,8 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
   const keys = keyQuery.data?.keys ?? [];
   const billing = billingQuery.data;
   const isPro = billing?.plan === 'pro_api';
+  const hasPlanDisabledKeys =
+    !isPro && keys.some((k) => k.apiAccessEnabled === false);
   const metricsResult = metricsQuery.data;
   const mutationError =
     createMutation.error?.message ??
@@ -315,9 +324,9 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
           }}
         >
           <div className="skeleton mb-4 h-4 w-32 rounded" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton h-14 rounded-lg" />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="skeleton h-[4.25rem] rounded-lg" />
             ))}
           </div>
         </div>
@@ -407,25 +416,42 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                   <>
                     <span className="font-medium text-foreground">API Pro</span>
                     {' — '}
-                    successful verifies this month count toward your cap.
+                    verify lookups (incl. batch rows) and product searches share
+                    one monthly cap.
                   </>
                 ) : (
                   <>
                     <span className="font-medium text-foreground">Free</span>
                     {' — '}
-                    upgrade for higher limits, metrics, and multiple keys.
+                    verify lookups count toward your cap; upgrade for search,
+                    higher limits, metrics, and multiple keys.
                   </>
                 )}
               </p>
-              <p
-                className="mt-2 font-display text-[1.25rem] font-semibold tabular-nums tracking-tight text-foreground"
-              >
+              <p className="mt-2 font-display text-[1.25rem] font-semibold tabular-nums tracking-tight text-foreground">
                 {billing.monthlyUsed.toLocaleString()}
                 <span style={{ color: 'var(--text-3)' }}>
                   {' '}
                   / {billing.monthlyLimit.toLocaleString()}
                 </span>
               </p>
+              {isPro ? (
+                <p
+                  className="mt-1.5 text-[12px]"
+                  style={{ color: 'var(--text-3)' }}
+                >
+                  This month:{' '}
+                  <span className="tabular-nums text-(--text-2)">
+                    {billing.monthlyVerifyUsed.toLocaleString()}
+                  </span>{' '}
+                  verify
+                  {' · '}
+                  <span className="tabular-nums text-(--text-2)">
+                    {billing.monthlySearchUsed.toLocaleString()}
+                  </span>{' '}
+                  search
+                </p>
+              ) : null}
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <button
@@ -516,17 +542,17 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <h3 className="text-[14px] font-semibold text-foreground">
-                Verify usage
+                Detailed usage
               </h3>
               <p
                 className="mt-0.5 text-[12px]"
                 style={{ color: 'var(--text-3)' }}
               >
-                Counts for{' '}
+                All-time counts from your API keys: verify endpoints and{' '}
                 <code className="font-mono text-[11px] text-(--text-3)">
-                  GET /api/verify/:nafdac
+                  GET /api/products/search
                 </code>{' '}
-                with your API key.
+                (search uses our indexed product database).
               </p>
             </div>
             <button
@@ -547,7 +573,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               Refresh
             </button>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
             <StatBox
               label="Total"
               value={metricsResult.metrics.totalVerifications}
@@ -568,11 +594,29 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               value={metricsResult.metrics.errorCount}
               accent="var(--stat-errors)"
             />
+            <StatBox
+              label="Search"
+              value={metricsResult.metrics.searchCount ?? 0}
+              accent="var(--text)"
+            />
           </div>
-          <p className="mt-3 text-[12px]" style={{ color: 'var(--text-3)' }}>
-            {metricsResult.metrics.lastVerifyAt
-              ? `Last verify ${fmtDate(metricsResult.metrics.lastVerifyAt)}`
-              : 'No verify requests yet'}
+          <p
+            className="mt-3 flex flex-col gap-1 text-[12px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-0"
+            style={{ color: 'var(--text-3)' }}
+          >
+            <span>
+              {metricsResult.metrics.lastVerifyAt
+                ? `Last verify ${fmtDate(metricsResult.metrics.lastVerifyAt)}`
+                : 'No verify requests yet'}
+            </span>
+            <span className="hidden sm:inline" aria-hidden>
+              ·
+            </span>
+            <span>
+              {metricsResult.metrics.lastSearchAt
+                ? `Last search ${fmtDate(metricsResult.metrics.lastSearchAt)}`
+                : 'No search requests yet'}
+            </span>
           </p>
         </div>
       ) : metricsResult?.kind === 'locked' ? (
@@ -587,8 +631,8 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
             Detailed metrics
           </h3>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--text-3)' }}>
-            Dashboard breakdowns are included with API Pro. Your monthly verify
-            count still appears under plan &amp; quota above.
+            Dashboard breakdowns are included with API Pro. Your monthly usage
+            total still appears under plan &amp; quota above.
           </p>
           {billingQuery.isSuccess && !isPro ? (
             <button
@@ -654,9 +698,9 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
             <div className="skeleton h-4 w-32 rounded" />
             <div className="skeleton h-8 w-24 shrink-0 rounded-md" />
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton h-14 rounded-lg" />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="skeleton h-[4.25rem] rounded-lg" />
             ))}
           </div>
         </div>
@@ -678,11 +722,10 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
               className="mt-0.5 text-[12px]"
               style={{ color: 'var(--text-3)' }}
             >
-              Send <code className="font-mono">x-api-key</code> on each
-              request.
+              Send <code className="font-mono">x-api-key</code> on each request.
               {isPro
-                ? ' Pro: multiple active keys.'
-                : ' Free: one active key.'}
+                ? ' Pro: every listed key works.'
+                : ' Free: only your primary key works; extra keys stay listed but are disabled until you upgrade.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -753,6 +796,34 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
             </div>
           ) : null}
 
+          {hasPlanDisabledKeys ? (
+            <div
+              className="flex items-start gap-2 rounded-lg border px-3 py-3 text-[13px] leading-relaxed"
+              style={{
+                borderColor: 'var(--border-subtle)',
+                background: 'var(--bg-overlay)',
+                color: 'var(--text-2)',
+              }}
+            >
+              <AlertCircle
+                className="mt-0.5 h-4 w-4 shrink-0 text-(--text-3)"
+                aria-hidden
+              />
+              <p>
+                On the <span className="font-medium text-foreground">Free</span>{' '}
+                plan, only your{' '}
+                <span className="font-medium text-foreground">primary</span> key
+                can call the API. Other keys return{' '}
+                <code className="font-mono text-[11px] text-foreground">
+                  KEY_PLAN_DISABLED
+                </code>{' '}
+                and cannot be rotated or revoked individually until you
+                resubscribe to API Pro (you can still use &ldquo;Revoke
+                all&rdquo;).
+              </p>
+            </div>
+          ) : null}
+
           {rawKey ? (
             <div
               className="rounded-lg border p-4"
@@ -791,6 +862,7 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                   style={{
                     borderColor: 'var(--border-subtle)',
                     background: 'var(--bg-raised)',
+                    opacity: k.apiAccessEnabled === false ? 0.88 : undefined,
                   }}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -806,6 +878,18 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                             }}
                           >
                             Primary
+                          </span>
+                        ) : null}
+                        {k.apiAccessEnabled === false ? (
+                          <span
+                            className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                            style={{
+                              borderColor: 'var(--callout-warning-border)',
+                              color: 'var(--callout-warning-fg)',
+                              background: 'var(--callout-warning-bg)',
+                            }}
+                          >
+                            API disabled on Free
                           </span>
                         ) : null}
                         {isPro && editingKeyId === k.id ? (
@@ -910,7 +994,12 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                     <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                       <button
                         type="button"
-                        disabled={busy}
+                        disabled={busy || k.apiAccessEnabled === false}
+                        title={
+                          k.apiAccessEnabled === false
+                            ? 'Rotate is only available for your primary key on the Free plan'
+                            : undefined
+                        }
                         onClick={() =>
                           createMutation.mutate({ rotateKeyId: k.id })
                         }
@@ -921,7 +1010,12 @@ export function ApiKeySection({ apiBaseUrl }: { apiBaseUrl: string }) {
                       </button>
                       <button
                         type="button"
-                        disabled={busy}
+                        disabled={busy || k.apiAccessEnabled === false}
+                        title={
+                          k.apiAccessEnabled === false
+                            ? 'Revoke this key on the Free plan requires API Pro, or use Revoke all'
+                            : undefined
+                        }
                         onClick={() => revokeOneMutation.mutate(k.id)}
                         className="inline-flex h-8 items-center gap-1.5 rounded-md border border-(--border) px-3 text-[12px] font-medium text-(--text-2) transition-colors hover:border-(--btn-danger-hover-border) hover:bg-(--btn-danger-hover-bg) hover:text-(--btn-danger-hover-fg) disabled:opacity-40 focus-visible-ring"
                       >
@@ -966,17 +1060,20 @@ function StatBox({
 }) {
   return (
     <div
-      className="rounded-lg border px-3 py-3"
+      className="flex min-h-[4.25rem] min-w-0 flex-col justify-center rounded-lg border px-2 py-2.5 sm:min-h-0 sm:px-3 sm:py-3"
       style={{
         borderColor: 'var(--border-subtle)',
         background: 'var(--bg-raised)',
       }}
     >
-      <p className="text-[11px] font-medium" style={{ color: 'var(--text-3)' }}>
+      <p
+        className="text-[10px] font-medium leading-snug sm:text-[11px]"
+        style={{ color: 'var(--text-3)' }}
+      >
         {label}
       </p>
       <p
-        className="mt-1 font-display text-[1.35rem] font-semibold tabular-nums tracking-tight"
+        className="mt-0.5 font-display text-[1.2rem] font-semibold tabular-nums tracking-tight sm:mt-1 sm:text-[1.35rem]"
         style={{ color: accent }}
       >
         {value}

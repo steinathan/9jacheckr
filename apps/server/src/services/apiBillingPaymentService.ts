@@ -39,7 +39,10 @@ function pickAmount(d: Record<string, unknown>): number | null {
   if (tx && typeof tx.amount === 'number' && Number.isFinite(tx.amount)) {
     return tx.amount;
   }
-  if (typeof d.requested_amount === 'number' && Number.isFinite(d.requested_amount)) {
+  if (
+    typeof d.requested_amount === 'number' &&
+    Number.isFinite(d.requested_amount)
+  ) {
     return d.requested_amount;
   }
   return null;

@@ -2,6 +2,8 @@ export type ApiBillingStatus = {
   plan: string;
   monthlyUsed: number;
   monthlyLimit: number;
+  monthlyVerifyUsed: number;
+  monthlySearchUsed: number;
 };
 
 type BillingJson = {

@@ -146,15 +146,19 @@ export function HomePageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
               style={{ color: 'var(--text-2)' }}
             >
               Batch verify and product search are included with your API Pro
-              plan. Same{' '}
+              plan. Search runs against{' '}
+              <span className="font-medium text-foreground">
+                our indexed product database
+              </span>{' '}
+              (not a live NAFDAC request per query). Same{' '}
               <code
                 className="font-mono text-[12px]"
                 style={{ color: 'var(--text-3)' }}
               >
                 x-api-key
               </code>{' '}
-              header; batch requests count each NAFDAC toward your monthly
-              quota.
+              header; each batch row and each successful search share the same
+              monthly API usage cap as single verifies.
             </p>
           </div>
           <ProApiEndpointsDocs apiBaseUrl={apiBaseUrl} />

@@ -11,7 +11,11 @@ function escapeRegex(s: string): string {
  * Split user input into keywords (order ignored for matching). Min length 2 per token.
  */
 export function tokenizeSearchQuery(raw: string): string[] {
-  const s = raw.normalize('NFKC').trim().slice(0, MAX_QUERY_CHARS).toLowerCase();
+  const s = raw
+    .normalize('NFKC')
+    .trim()
+    .slice(0, MAX_QUERY_CHARS)
+    .toLowerCase();
   if (!s) return [];
   const segments = s.split(/[\s,;|/+]+/).filter(Boolean);
   const out: string[] = [];
@@ -65,7 +69,11 @@ export async function runProductSearch(
   const seen = new Set<string>();
   const merged: LeanHit[] = [];
 
-  if (trimmed.length >= 4 && trimmed.length <= 32 && /^[\w.-]+$/i.test(trimmed)) {
+  if (
+    trimmed.length >= 4 &&
+    trimmed.length <= 32 &&
+    /^[\w.-]+$/i.test(trimmed)
+  ) {
     const exact = await ProductModel.findOne({ nafdac: trimmed }).lean();
     if (exact) {
       seen.add(exact.nafdac);

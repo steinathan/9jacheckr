@@ -8,6 +8,8 @@ const userApiUsageSchema = new Schema(
     notFoundCount: { type: Number, default: 0 },
     errorCount: { type: Number, default: 0 },
     lastVerifyAt: { type: Date, default: null },
+    searchCount: { type: Number, default: 0 },
+    lastSearchAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

@@ -21,6 +21,8 @@ type BillingAccountJson = {
     plan: string;
     monthlyUsed: number;
     monthlyLimit: number;
+    monthlyVerifyUsed: number;
+    monthlySearchUsed: number;
     hasCustomerProfile: boolean;
     subscription: null | {
       paystackStatus: string | null;
@@ -79,9 +81,9 @@ function fmtWhen(iso: string | null) {
   });
 }
 
-async function fetchBillingAccount(base: string): Promise<
-  NonNullable<BillingAccountJson['account']>
-> {
+async function fetchBillingAccount(
+  base: string,
+): Promise<NonNullable<BillingAccountJson['account']>> {
   const res = await fetch(`${base}/api/keys/billing/account`, {
     credentials: 'include',
     cache: 'no-store',
@@ -187,7 +189,9 @@ export function SettingsPageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
     onSuccess: () => {
       setShowCancelConfirm(false);
       void queryClient.invalidateQueries({ queryKey: ['api-keys', 'billing'] });
-      void queryClient.invalidateQueries({ queryKey: ['api-keys', 'me', base] });
+      void queryClient.invalidateQueries({
+        queryKey: ['api-keys', 'me', base],
+      });
     },
   });
 
@@ -216,7 +220,9 @@ export function SettingsPageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
           }}
         >
           <p>
-            <span className="font-medium text-foreground">Payment received.</span>{' '}
+            <span className="font-medium text-foreground">
+              Payment received.
+            </span>{' '}
             If your plan hasn&apos;t updated yet, wait a moment and refresh — or
             contact support if it takes more than a few minutes.
           </p>
@@ -282,7 +288,8 @@ export function SettingsPageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
                       <span className="font-medium text-foreground">
                         API Pro
                       </span>{' '}
-                      — successful verifies this month.
+                      — verifies (incl. batch rows) and product searches share
+                      one monthly cap.
                     </>
                   ) : (
                     <>
@@ -298,6 +305,20 @@ export function SettingsPageClient({ apiBaseUrl }: { apiBaseUrl: string }) {
                     / {account.monthlyLimit.toLocaleString()}
                   </span>
                 </p>
+                {isPro ? (
+                  <p className="mt-1.5 text-[12px] text-(--text-3)">
+                    This month:{' '}
+                    <span className="tabular-nums text-(--text-2)">
+                      {account.monthlyVerifyUsed.toLocaleString()}
+                    </span>{' '}
+                    verify
+                    {' · '}
+                    <span className="tabular-nums text-(--text-2)">
+                      {account.monthlySearchUsed.toLocaleString()}
+                    </span>{' '}
+                    search
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <button
