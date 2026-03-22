@@ -38,7 +38,7 @@ export function LandingHeroActions({ supportHref }: LandingHeroActionsProps) {
           href={supportHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-lg border border-[rgba(223,255,31,0.5)] bg-[rgba(223,255,31,0.08)] px-5 text-[14px] font-semibold text-[#dfff1f] transition-colors hover:border-[rgba(223,255,31,0.7)] hover:bg-[rgba(223,255,31,0.14)] hover:text-[#eaff5e] focus-visible-ring sm:w-auto"
+          className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-lg border border-(--btn-accent-outline-border) bg-(--btn-accent-outline-bg) px-5 text-[14px] font-semibold text-(--btn-accent-outline-fg) transition-colors hover:border-(--btn-accent-outline-hover-border) hover:bg-(--btn-accent-outline-hover-bg) hover:text-(--btn-accent-outline-hover-fg) focus-visible-ring sm:w-auto"
         >
           <Heart className="h-4 w-4" strokeWidth={2} aria-hidden />
           Support the project
