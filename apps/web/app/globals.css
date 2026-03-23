@@ -510,12 +510,18 @@ html.light .verify-result-dialog::backdrop {
 }
 
 @keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track { animation: none; }
+  .ticker-track {
+    animation: none;
+  }
 }
 
 /* Tweet embed dark theme overrides */

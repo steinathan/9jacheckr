@@ -45,10 +45,10 @@ export function SiteNav() {
   return (
     <>
       {/* ── Floating nav bar ──────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex justify-center px-4 pt-4 pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-40 flex justify-center px-4 pt-3 pb-0.5 lg:pt-4 lg:pb-0 pointer-events-none">
         <div
           className={cn(
-            'pointer-events-auto flex h-12 w-full max-w-4xl items-center justify-between gap-4 rounded-full px-3 pl-4 transition-all duration-300',
+            'pointer-events-auto flex h-14 w-full max-w-4xl items-center justify-between gap-3 rounded-full px-3.5 pl-4 transition-all duration-300 lg:h-12 lg:gap-4 lg:px-3 lg:pl-4',
             scrolled
               ? 'shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.06)]'
               : '',
@@ -65,12 +65,12 @@ export function SiteNav() {
           <Link
             href="/"
             onClick={() => setMenuOpen(false)}
-            className="group flex shrink-0 items-center gap-2 text-foreground"
+            className="group flex min-w-0 shrink-0 items-center gap-2.5 text-foreground lg:gap-2"
           >
-            <span className="logo-badge flex h-7 w-7 items-center justify-center rounded-lg text-[12px] font-bold text-black">
+            <span className="logo-badge flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-[14px] font-bold text-black lg:h-7 lg:w-7 lg:rounded-lg lg:text-[12px]">
               9
             </span>
-            <span className="hidden text-[14px] font-semibold tracking-tight sm:block">
+            <span className="truncate text-[15px] font-semibold tracking-tight lg:text-[14px]">
               9ja Checkr
             </span>
           </Link>
@@ -106,7 +106,7 @@ export function SiteNav() {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2.5 lg:gap-2">
             <div className="hidden lg:block">
               <ThemeToggle />
             </div>
@@ -114,11 +114,11 @@ export function SiteNav() {
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-foreground transition-colors hover:bg-(--nav-hover-bg) focus-visible-ring lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-(--nav-hover-bg) focus-visible-ring lg:hidden"
               aria-expanded={menuOpen}
               aria-label="Open menu"
             >
-              <Menu className="h-[18px] w-[18px]" strokeWidth={2} />
+              <Menu className="h-5 w-5" strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -127,7 +127,7 @@ export function SiteNav() {
       {/* ── Mobile drawer — rendered at root level, not inside header ── */}
       <div
         className={cn(
-          'fixed inset-0 z-[300] lg:hidden transition-opacity duration-300',
+          'fixed inset-0 z-300 lg:hidden transition-opacity duration-300',
           menuOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none',
