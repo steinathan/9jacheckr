@@ -6,6 +6,44 @@ function formatDate(value: string | null): string {
   return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 10);
 }
 
+/** How long ago a past date was (aligned with web verify UI). */
+function relativeTimePast(past: Date, now: Date): string {
+  const dayMs = 86_400_000;
+  const totalDays = Math.floor((now.getTime() - past.getTime()) / dayMs);
+  if (totalDays < 1) return 'less than a day ago';
+  if (totalDays === 1) return '1 day ago';
+  if (totalDays < 7) return `${totalDays} days ago`;
+
+  const weeks = Math.floor(totalDays / 7);
+  if (totalDays < 30) {
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+
+  let months =
+    (now.getFullYear() - past.getFullYear()) * 12 +
+    (now.getMonth() - past.getMonth());
+  if (now.getDate() < past.getDate()) months -= 1;
+  if (months < 1) {
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+  if (months < 12) {
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  }
+
+  const years = Math.floor(months / 12);
+  return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+
+function formatExpiryWithRelative(iso: string | null): string {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const dateStr = d.toISOString().slice(0, 10);
+  const now = new Date();
+  if (d >= now) return dateStr;
+  return `${dateStr} · The registration expired ${relativeTimePast(d, now)}.`;
+}
+
 function expiryStatus(expiryDate: string | null): {
   line: string;
   warn: boolean;
@@ -18,7 +56,7 @@ function expiryStatus(expiryDate: string | null): {
   const days = Math.ceil(ms / (24 * 60 * 60 * 1000));
   if (days < 0)
     return {
-      line: '⚠️ This registration appears expired. Do not use if in doubt. Buy from licensed outlets only.',
+      line: `⚠️ The registration expired ${relativeTimePast(d, now)}. Treat as historical — confirm on packaging. Do not use if in doubt; buy from licensed outlets only.`,
       warn: true,
     };
   if (days <= 90)
@@ -40,7 +78,7 @@ export function formatVerifyReply(product: ProductDto): string {
     `<b>Category:</b> ${escapeHtml(product.category || '—')}`,
     `<b>Manufacturer:</b> ${escapeHtml(product.manufacturer || '—')}`,
     `<b>Approved:</b> ${formatDate(product.approvedDate)}`,
-    `<b>Expiry:</b> ${formatDate(product.expiryDate)}`,
+    `<b>Expiry:</b> ${formatExpiryWithRelative(product.expiryDate)}`,
   ];
   if (product.ingredients.length) {
     lines.push(
