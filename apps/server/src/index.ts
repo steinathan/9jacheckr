@@ -21,7 +21,7 @@ import {
   healthReadyRateLimiter,
   publicVerifyRateLimiter,
 } from './middleware/rateLimiter.js';
-import { requireHealthNafdacSecretIfConfigured } from './middleware/requireHealthNafdacSecretIfConfigured.js';
+import { requireHealthSecret } from './middleware/requireHealthSecret.js';
 import { billingWebhookController } from './controllers/billingWebhookController.js';
 import {
   nafdacHealthSampleNumber,
@@ -72,26 +72,31 @@ async function main() {
     res.status(200).json({ ok: true, service: '9ja-checkr-api' });
   });
 
-  app.get('/health/ready', healthReadyRateLimiter, async (_req, res) => {
-    const dbOk = await checkMongoHealth();
-    if (!dbOk) {
-      res.status(503).json({
-        ok: false,
+  app.get(
+    '/health/ready',
+    requireHealthSecret,
+    healthReadyRateLimiter,
+    async (_req, res) => {
+      const dbOk = await checkMongoHealth();
+      if (!dbOk) {
+        res.status(503).json({
+          ok: false,
+          service: '9ja-checkr-api',
+          database: 'unavailable',
+        });
+        return;
+      }
+      res.status(200).json({
+        ok: true,
         service: '9ja-checkr-api',
-        database: 'unavailable',
+        database: 'connected',
       });
-      return;
-    }
-    res.status(200).json({
-      ok: true,
-      service: '9ja-checkr-api',
-      database: 'connected',
-    });
-  });
+    },
+  );
 
   app.get(
     '/health/nafdac',
-    requireHealthNafdacSecretIfConfigured,
+    requireHealthSecret,
     healthNafdacRateLimiter,
     async (_req, res) => {
       const probe = await runNafdacHealthProbe();
