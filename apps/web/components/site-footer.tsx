@@ -118,6 +118,7 @@ export function SiteFooter() {
                   label: 'Status page',
                   href: 'https://status.9jacheckr.xyz',
                 },
+                { label: 'Donate', href: SUPPORT_PAYSTACK_URL },
               ].map((l) => (
                 <li key={l.label}>
                   <a

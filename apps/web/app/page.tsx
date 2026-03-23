@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { SiteNav } from '@/components/site-nav';
 import { SiteFooter } from '@/components/site-footer';
+import { SUPPORT_PAYSTACK_URL } from '@/lib/support';
 import { LandingHeroVerify } from '@/components/landing-hero-verify';
 import { LandingPricingSection } from '@/components/landing-pricing-section';
 import { TweetWall } from '@/components/tweet-wall';
@@ -192,14 +193,31 @@ export default function Home() {
             <LandingHeroVerify />
           </div>
 
-          <p className="mt-5 text-[12px]" style={{ color: 'var(--text-3)' }}>
-            Data from the official NAFDAC public register ·{' '}
-            <Link
-              href="/disclaimer"
-              className="underline underline-offset-2 transition-colors hover:text-(--text-2)"
+          <p className="mt-5 flex flex-col items-center gap-2 text-center text-[12px] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-1 sm:gap-y-0">
+            <span style={{ color: 'var(--text-3)' }}>
+              Data from the official NAFDAC public register ·{' '}
+              <Link
+                href="/disclaimer"
+                className="underline underline-offset-2 transition-colors hover:text-(--text-2)"
+              >
+                not affiliated with NAFDAC
+              </Link>
+            </span>
+            <span
+              className="hidden sm:inline"
+              style={{ color: 'var(--text-3)' }}
             >
-              not affiliated with NAFDAC
-            </Link>
+              ·
+            </span>
+            <a
+              href={SUPPORT_PAYSTACK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline decoration-(--border) underline-offset-2 transition-colors hover:text-(--accent)"
+              style={{ color: 'var(--text-2)' }}
+            >
+              Donate to support the project ↗
+            </a>
           </p>
         </div>
 
