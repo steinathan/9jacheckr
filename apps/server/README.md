@@ -16,7 +16,7 @@ Express API: NAFDAC verify, Telegram bot hooks, Better Auth (Google), API keys i
 
 **Plans / errors:** API Free vs Pro — monthly **usage** cap **`billingConstants.ts`**: Free **300**, Pro **50,000** (₦10k/mo via Paystack plan). Usage = verify rows (single + batch, incl. not-found) **plus** successful **`GET /api/products/search`** responses; metrics, rate limits, multiple keys. On **Free**, only the **primary** (oldest) API key works for `/api/verify` and related routes; extra keys get **403** `KEY_PLAN_DISABLED`. Same rule for **dashboard** `POST /api/keys/create` (rotate) and `DELETE /api/keys/key/:id` (revoke) — non-primary keys cannot be rotated or revoked until Pro (`Revoke all` still revokes every key). Bot Free vs Pro (daily cap). Stable `code` values for clients: `PLAN_QUOTA_EXCEEDED`, `METRICS_NOT_AVAILABLE`, `FEATURE_REQUIRES_PRO`, `KEY_PLAN_DISABLED`, `BOT_DAILY_LIMIT`, `KEY_LIMIT`. Pro-only: `POST /api/verify/batch`, `GET /api/products/search`.
 
-**Health:** `GET /health` — process up (**800 req / 15 min / IP**). `GET /health/ready` — MongoDB `ping`; **503** if down (**120 req / 15 min / IP**).
+**Health:** `GET /health` — process up (**800 req / 15 min / IP**). `GET /health/ready` — MongoDB `ping`; **503** if down (**120 req / 15 min / IP**). `GET /health/nafdac` — live POST to NAFDAC public verify for sample **`01-5713`** (bypasses DB cache); **503** if timeout, parse failure, or missing env (**30 req / 15 min / IP**). Optional **`HEALTH_NAFDAC_SECRET`**: if set, require header **`x-health-nafdac-secret`** (timing-safe).
 
 Google redirect URI: `{BETTER_AUTH_URL}/api/auth/callback/google`
 

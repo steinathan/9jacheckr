@@ -16,11 +16,17 @@ import { errorHandler } from './middleware/errorHandler.js';
 import {
   botRoutesRateLimiter,
   dashboardKeysRateLimiter,
+  healthNafdacRateLimiter,
   healthRateLimiter,
   healthReadyRateLimiter,
   publicVerifyRateLimiter,
 } from './middleware/rateLimiter.js';
+import { requireHealthNafdacSecretIfConfigured } from './middleware/requireHealthNafdacSecretIfConfigured.js';
 import { billingWebhookController } from './controllers/billingWebhookController.js';
+import {
+  nafdacHealthSampleNumber,
+  runNafdacHealthProbe,
+} from './services/nafdacHealthProbeService.js';
 
 const PORT = Number(process.env.PORT) || 4000;
 
@@ -82,6 +88,31 @@ async function main() {
       database: 'connected',
     });
   });
+
+  app.get(
+    '/health/nafdac',
+    requireHealthNafdacSecretIfConfigured,
+    healthNafdacRateLimiter,
+    async (_req, res) => {
+      const probe = await runNafdacHealthProbe();
+      if (probe.ok) {
+        res.status(200).json({
+          ok: true,
+          service: '9ja-checkr-api',
+          nafdac: nafdacHealthSampleNumber,
+          lookup: 'ok',
+        });
+        return;
+      }
+      res.status(503).json({
+        ok: false,
+        service: '9ja-checkr-api',
+        nafdac: nafdacHealthSampleNumber,
+        lookup: 'failed',
+        reason: probe.reason,
+      });
+    },
+  );
 
   app.use('/api', requireApiAccess);
   app.use('/api/verify', verifyNafdacRouter);

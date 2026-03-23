@@ -55,3 +55,12 @@ export const healthReadyRateLimiter = rateLimit({
   legacyHeaders: false,
   message: limitBody,
 });
+
+/** `GET /health/nafdac` hits NAFDAC — low cap per IP. */
+export const healthNafdacRateLimiter = rateLimit({
+  windowMs: window15m,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: limitBody,
+});
