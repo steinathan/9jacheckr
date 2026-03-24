@@ -167,7 +167,7 @@ Optional `nafdac` may appear on single-verify errors.
 
 ## License
 
-**GNU GPLv3** — GNU General Public License v3.0 only (SPDX `GPL-3.0-only`). Strong copyleft: distribution of derivatives or combined works typically requires **same-license** source release, **notice** preservation, and **stating changes**; no warranty. Full text: monorepo root [`LICENSE`](../../LICENSE).
+**GNU AGPLv3** — GNU Affero General Public License v3.0 only (SPDX `AGPL-3.0-only`). Strong copyleft like the GPL, plus **network/server** obligations when users interact with a **modified** version remotely. Distribution and SaaS-style use have **source** and **same-license** requirements; no warranty. Full text: monorepo root [`LICENSE`](../../LICENSE).
 
 ## Changelog
 

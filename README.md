@@ -175,7 +175,7 @@ This project is **open source**. If you deploy the stack yourself, base URL and 
 
 ### License
 
-This project is licensed under the [**GNU General Public License v3.0**](LICENSE) (**GNU GPLv3**; SPDX `GPL-3.0-only`). It is a **strong copyleft** license: distributing modified versions or larger works that include this code generally requires making **complete corresponding source** available under the **same license**, keeping **copyright and license notices**, and **documenting changes**. **Commercial use**, **private use**, **modification**, and **patent use** are allowed; the license **disclaims liability and warranty**. Full terms: [`LICENSE`](LICENSE).
+This project is licensed under the [**GNU Affero General Public License v3.0**](LICENSE) (**GNU AGPLv3**; SPDX `AGPL-3.0-only`). Like the GPL, it is **strong copyleft** for distribution: modified or combined works generally require **corresponding source** under the **same license**, **notice** preservation, and **documenting changes**. AGPL **adds** obligations for **network use**: if you run a **modified** version as a **service** that users interact with over a network, you typically must offer those users the **corresponding source** as well. **Commercial use**, **private use**, **modification**, and **patent use** are allowed; the license **disclaims liability and warranty**. Full terms: [`LICENSE`](LICENSE).
 
 ---
 
