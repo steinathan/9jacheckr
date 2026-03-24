@@ -8,6 +8,7 @@ import {
 } from '../services/monthlyApiQuotaService.js';
 import { recordUserApiVerify } from '../services/userApiUsageService.js';
 import { logger } from '../utils/logger.js';
+import { isPlausibleNafdacCertificate } from '../utils/nafdacFromOcrText.js';
 
 const BATCH_MAX = 40;
 
@@ -62,22 +63,35 @@ export async function verifyBatchController(
     return;
   }
 
-  const quota = await assertMonthlyApiQuotaAllowsAdditional(
-    userId,
-    list.length,
-  );
-  if (!quota.ok) {
-    res.status(429).json({
-      ok: false,
-      code: 'PLAN_QUOTA_EXCEEDED',
-      message: `Not enough monthly API usage quota for ${list.length} verify operations.`,
-    } as VerifyApiErrorBody);
-    return;
+  const validCount = list.filter((n) => isPlausibleNafdacCertificate(n)).length;
+
+  if (validCount > 0) {
+    const quota = await assertMonthlyApiQuotaAllowsAdditional(
+      userId,
+      validCount,
+    );
+    if (!quota.ok) {
+      res.status(429).json({
+        ok: false,
+        code: 'PLAN_QUOTA_EXCEEDED',
+        message: `Not enough monthly API usage quota for ${validCount} verify operations.`,
+      } as VerifyApiErrorBody);
+      return;
+    }
   }
 
   const results: BatchItem[] = [];
   try {
     for (const nafdac of list) {
+      if (!isPlausibleNafdacCertificate(nafdac)) {
+        results.push({
+          nafdac,
+          ok: false,
+          code: 'INVALID_NAFDAC',
+          message: 'Invalid NAFDAC registration number format.',
+        });
+        continue;
+      }
       const product = await getOrFetchProduct(nafdac);
       if (!product) {
         await recordUserApiVerify(userId, 'not_found').catch(() => {});

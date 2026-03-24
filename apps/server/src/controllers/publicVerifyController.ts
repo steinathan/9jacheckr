@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type { VerifyApiErrorBody, VerifyApiSuccess } from '../types/types.js';
 import { getOrFetchProduct } from '../services/verifyService.js';
 import { logger } from '../utils/logger.js';
+import { isPlausibleNafdacCertificate } from '../utils/nafdacFromOcrText.js';
 
 export async function publicVerifyController(
   req: Request,
@@ -16,6 +17,16 @@ export async function publicVerifyController(
         ok: false,
         code: 'INVALID_NAFDAC',
         message: 'Enter a NAFDAC registration number.',
+      };
+      res.status(400).json(body);
+      return;
+    }
+
+    if (!isPlausibleNafdacCertificate(raw)) {
+      const body: VerifyApiErrorBody = {
+        ok: false,
+        code: 'INVALID_NAFDAC',
+        message: 'Invalid NAFDAC registration number format.',
       };
       res.status(400).json(body);
       return;

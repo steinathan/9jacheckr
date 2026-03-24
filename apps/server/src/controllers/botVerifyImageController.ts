@@ -6,6 +6,7 @@ import { detectTextInImage } from '../services/googleVisionTextService.js';
 import {
   extractNafdacCandidatesFromVisionAnnotation,
   formatVisionOcrForGemini,
+  isPlausibleNafdacCertificate,
 } from '../utils/nafdacFromOcrText.js';
 import { resolveBotPlan } from '../services/botPlanService.js';
 import { recordBotVerifyMetrics } from '../services/botMetricsService.js';
@@ -108,6 +109,15 @@ export async function botVerifyImageController(
       }
       if (gemini.kind === 'one') {
         const nafdac = gemini.nafdac;
+        if (!isPlausibleNafdacCertificate(nafdac)) {
+          res.status(422).json({
+            ok: false,
+            code: 'INVALID_NAFDAC',
+            message:
+              'Could not read a valid NAFDAC number from the photo. Try /verify with text.',
+          } satisfies VerifyApiErrorBody);
+          return;
+        }
         logger.info('bot verify-image', { nafdac, source: 'gemini' });
         const product = await getOrFetchProduct(nafdac);
         await respondAfterProductLookup(res, {
@@ -155,6 +165,15 @@ export async function botVerifyImageController(
     }
 
     const nafdac = candidates[0]!;
+    if (!isPlausibleNafdacCertificate(nafdac)) {
+      res.status(422).json({
+        ok: false,
+        code: 'INVALID_NAFDAC',
+        message:
+          'Could not read a valid NAFDAC number from the photo. Try /verify with text.',
+      } satisfies VerifyApiErrorBody);
+      return;
+    }
     logger.info('bot verify-image', { nafdac, source: 'vision-regex' });
     const product = await getOrFetchProduct(nafdac);
     await respondAfterProductLookup(res, {

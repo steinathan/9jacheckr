@@ -3,7 +3,10 @@ import { isProductCacheStale } from '../constants/productCacheConstants.js';
 import type { ExternalNafdacPayload, ProductPlain } from '../types/types.js';
 import { logger } from '../utils/logger.js';
 import { fetchProductFromNafdacRegistration } from '../utils/nafdacRegistrationClient.js';
-import { normalizeNafdac } from '../utils/nafdacFromOcrText.js';
+import {
+  isPlausibleNafdacCertificate,
+  normalizeNafdac,
+} from '../utils/nafdacFromOcrText.js';
 
 function parseDate(value: string | null | undefined): Date | null {
   if (value == null || value === '') return null;
@@ -105,7 +108,7 @@ export async function getOrFetchProduct(
   rawNafdac: string,
 ): Promise<ProductPlain | null> {
   const nafdac = normalizeNafdac(rawNafdac);
-  if (!nafdac) return null;
+  if (!nafdac || !isPlausibleNafdacCertificate(rawNafdac)) return null;
 
   const existing = await ProductModel.findOne({ nafdac }).lean();
 

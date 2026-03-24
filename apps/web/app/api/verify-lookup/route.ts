@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isPlausibleNafdacCertificate } from '@/lib/nafdac-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,6 +93,17 @@ export async function POST(req: NextRequest) {
         ok: false,
         code: 'INVALID_NAFDAC',
         message: 'Enter a NAFDAC registration number.',
+      },
+      { status: 400 },
+    );
+  }
+
+  if (!isPlausibleNafdacCertificate(raw)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: 'INVALID_NAFDAC',
+        message: 'Invalid NAFDAC registration number format.',
       },
       { status: 400 },
     );

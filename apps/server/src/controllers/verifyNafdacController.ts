@@ -18,6 +18,7 @@ import {
   type BotDailyVerifyChannel,
 } from '../services/botPlanService.js';
 import { logger } from '../utils/logger.js';
+import { isPlausibleNafdacCertificate } from '../utils/nafdacFromOcrText.js';
 
 function apiKeyUserId(req: Request): string | undefined {
   if (req.authContext?.source !== 'api_key') return undefined;
@@ -114,6 +115,19 @@ export async function verifyNafdacController(
         ok: false,
         code: 'INVALID_NAFDAC',
         message: 'NAFDAC number is required',
+      };
+      res.status(400).json(body);
+      return;
+    }
+
+    if (!isPlausibleNafdacCertificate(raw)) {
+      if (keyUserId) {
+        await recordUserApiVerify(keyUserId, 'error').catch(() => {});
+      }
+      const body: VerifyApiErrorBody = {
+        ok: false,
+        code: 'INVALID_NAFDAC',
+        message: 'Invalid NAFDAC registration number format.',
       };
       res.status(400).json(body);
       return;
