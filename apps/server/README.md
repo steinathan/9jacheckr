@@ -70,6 +70,18 @@ Google redirect URI (configure in Google Cloud console):
 | `REQUEST_VERIFICATION_TOKEN` | Form anti-forgery token (from page source) |
 | `NAFDAC_COOKIE`              | Cookie header value for the same session   |
 
+### Product cache (Mongo, lazy revalidation)
+
+Successful portal responses are stored in Mongo. On later lookups the row is **reused** until it is **stale**, then the server re-fetches NAFDAC and **updates** the document. If the portal says the number is **not found** on that revalidation, the cached row is **deleted** and the API responds not found. If NAFDAC **errors** during revalidation, the API returns the **cached** row and logs a warning (cache miss with no row still errors as before).
+
+| Variable | Default | Purpose |
+| -------- | ------- | ------- |
+| `PRODUCT_CACHE_MAX_AGE_DAYS` | `14` | Max age since `updatedAt` before re-fetch |
+| `PRODUCT_CACHE_NEAR_EXPIRY_WINDOW_DAYS` | `30` | If `expiryDate` is within this many days of now (including already expired), use the shorter TTL below |
+| `PRODUCT_CACHE_NEAR_EXPIRY_MAX_AGE_HOURS` | `24` | Max cache age for rows in that near-expiry window |
+
+**Search:** `GET /api/products/search` reads Mongo only; a row refreshes when that NAFDAC is verified again (or you add a background job later).
+
 ### Paystack (API Pro + web billing)
 
 | Variable                | Purpose                                                           |

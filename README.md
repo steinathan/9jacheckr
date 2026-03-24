@@ -24,7 +24,7 @@ So technically: **automation of NAFDAC’s public verification page + HTML parsi
 **Things to be aware of**
 
 - If NAFDAC **changes their page layout**, our parser may break until it’s updated.
-- We **store** successful results in our database so we don’t hit NAFDAC on every repeat request. That’s an optimization on top of the flow above.
+- We **store** successful results in our database so we don’t hit NAFDAC on every repeat request. Stale rows are **re-fetched** on demand (see `apps/server/README.md`, product cache env vars).
 
 Relevant code: `apps/server/src/utils/nafdacRegistrationClient.ts` (request) and `apps/server/src/utils/nafdacHtmlParser.ts` (parsing).
 
